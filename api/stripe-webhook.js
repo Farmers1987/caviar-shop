@@ -7,6 +7,7 @@
 // When DPD_MODE is set, it also books the DPD shipment first (see _dpd.js).
 
 const DPD = require('./_dpd.js');
+const LOGO = require('./_logo.js');
 
 const FROM = process.env.ORDER_FROM || 'Farmers & Company <hello@farmersandcompany.lt>';
 // hello@ only sends; replies and customer questions go to Steffen.
@@ -30,7 +31,10 @@ async function sendMail(apiKey, idempotencyKey, mail) {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
     // The tag lets these mails be filtered apart from other projects in the same mail account.
-    body: JSON.stringify(Object.assign({ tags: [{ name: 'project', value: 'caviar-shop' }] }, mail)),
+    // The logo travels inside the mail (cid:fc-logo), so it shows even while the site is locked.
+    body: JSON.stringify(Object.assign({ tags: [{ name: 'project', value: 'caviar-shop' }] }, mail, {
+      attachments: [{ filename: 'farmers-company.png', content: LOGO, content_id: 'fc-logo' }].concat(mail.attachments || []),
+    })),
   });
   if (!r.ok) throw new Error('mail ' + r.status + ' ' + (await r.text()).slice(0, 200));
 }
@@ -59,7 +63,7 @@ function orderFacts(session) {
 const shell = (inner) => `<!doctype html><html><body style="margin:0;background:#f1eee4;font-family:Arial,Helvetica,sans-serif;color:#0e2219">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff">
-<tr><td style="background:#0e2219;color:#f1eee4;padding:20px 28px;font-size:18px;letter-spacing:2px">FARMERS &amp; COMPANY</td></tr>
+<tr><td align="center" style="background:#0e2219;color:#f1eee4;padding:18px 28px;font-size:18px;letter-spacing:2px"><img src="cid:fc-logo" width="160" height="104" alt="FARMERS &amp; COMPANY" style="display:block;border:0;width:160px;height:auto;color:#f1eee4"></td></tr>
 <tr><td style="padding:28px;font-size:15px;line-height:1.55">${inner}</td></tr>
 </table></td></tr></table></body></html>`;
 
