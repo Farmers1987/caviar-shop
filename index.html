@@ -43,7 +43,7 @@ nav a{text-decoration:none;padding:12px 0}
 .hero .tins img{width:56%;height:auto}
 .hero .tins img+img{margin-left:-14%;margin-top:22%}
 .xmas{border-top:1px solid var(--line);padding-top:20px;display:flex;gap:14px;align-items:baseline;max-width:520px}
-.grid{display:flex;flex-wrap:wrap;gap:24px}
+.grid{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
 .card{flex:1 1 250px;min-width:0;background:var(--card);border:1px solid var(--line);padding:28px 24px 24px;display:flex;flex-direction:column;gap:18px}
 .spacer{flex:1 1 250px;min-width:0;height:0}
 .shot{aspect-ratio:4/3;position:relative}
@@ -55,7 +55,9 @@ nav a{text-decoration:none;padding:12px 0}
 .card h3{font-size:30px}
 .stars{color:var(--accent);font-size:14px;letter-spacing:.3em}
 .small{font-size:14px;color:var(--muted)}
-.desc{font-size:15px;color:var(--soft);flex:1 1 auto}
+.desc{font-size:15px;color:var(--soft)}
+#products .desc{min-height:6.2em}
+.note-h{min-height:3.1em}
 .facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;border-top:1px solid var(--line);padding-top:14px}
 .facts dt{color:var(--muted)}
 .sizes{display:flex;gap:8px}
@@ -63,16 +65,19 @@ nav a{text-decoration:none;padding:12px 0}
 .sizes button[aria-pressed=true]{background:var(--text);color:var(--ground);border-color:var(--text);font-weight:600}
 .pricerow{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .price{font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-size:32px;line-height:1}
-.cols{display:flex;flex-wrap:wrap;gap:48px 64px}
-.cols>div{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:28px}
-.block{display:flex;flex-direction:column;gap:10px}
-.block h3,.three h3{font-size:26px}
-.block p,.three p{color:var(--soft)}
-table{width:100%;min-width:380px;border-collapse:collapse;font-size:15px}
-caption{text-align:left;color:var(--muted);font-size:14px;padding-bottom:8px}
-th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;font-weight:400}
-th:first-child{text-align:left;padding-left:0;color:var(--soft)}td:last-child,th:last-child{padding-right:0}
-thead th{border-bottom-color:var(--accent);font-weight:600;color:var(--text)}
+.three h3{font-size:26px}
+.three p{color:var(--soft)}
+details{border-top:1px solid var(--line);padding-top:6px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:20px;line-height:1}
+details[open] summary::after{content:"−"}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+details p{font-size:14px;color:var(--soft);margin:4px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{text-align:left;color:var(--muted);font-size:13px;padding-bottom:4px}
+th,td{padding:7px 0;border-bottom:1px solid var(--line);text-align:right;font-weight:400}
+th{text-align:left;color:var(--soft);padding-right:10px}
 .three{display:flex;flex-wrap:wrap;gap:40px 48px}
 .three>div{flex:1 1 260px;min-width:0;border-top:1px solid var(--accent);padding-top:20px;display:flex;flex-direction:column;gap:10px}
 .order{padding-top:80px;padding-bottom:96px;display:flex;flex-wrap:wrap;gap:48px}
@@ -94,7 +99,16 @@ footer .wrap{padding-top:48px;padding-bottom:56px;display:flex;flex-wrap:wrap;ju
 footer .col{display:flex;flex-direction:column;gap:8px;flex:0 1 260px;min-width:0}
 footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;font-size:13px}
 .sr{position:absolute;left:-9999px}
-@media (max-width:640px){.wrap{padding-left:20px;padding-right:20px}.order .box{padding:20px}}
+.btn.added{background:var(--text)}
+#cartBar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--text);color:var(--ground);box-shadow:0 -6px 24px rgba(0,0,0,.35);transform:translateY(110%);transition:transform .25s ease}
+#cartBar.show{transform:none}
+#cartBar .wrap{padding-top:12px;padding-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
+#cartBar p{font-size:15px}
+#cartBar strong{font-weight:600}
+#cartBar a{text-decoration:none;background:var(--ground);color:var(--text);padding:13px 26px;font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+#cartBar a:hover{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){#cartBar{transition:none}html{scroll-behavior:auto}}
+@media (max-width:640px){#products .desc,.note-h{min-height:0}.wrap{padding-left:20px;padding-right:20px}.order .box{padding:20px}}
 </style>
 </head>
 <body>
@@ -103,8 +117,8 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <a href="#top"><img src="/img/logo_light.png" alt="Farmers &amp; Company" style="height:64px;width:auto"></a>
 <nav aria-label="Main">
 <a href="#caviar">Caviar</a>
-<a href="#about">About</a>
 <a href="#accessories">Accessories</a>
+<a href="#about">About</a>
 <a href="#delivery">Delivery</a>
 </nav>
 <a class="cartlink" href="#order">Your order · <span id="cartCount">0</span></a>
@@ -137,52 +151,31 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <div class="head">
 <p class="eyebrow">The selection</p>
 <h2 class="display">Four caviars, two sizes</h2>
-<p class="small" style="font-size:16px">All prices include VAT. Pick a size and add it to your order.</p>
+<p class="small" style="font-size:16px">All prices include VAT. Pick a size and add it to your order. Nutrition and ingredients are listed under each caviar.</p>
 </div>
 <div class="grid" id="products"></div>
 </div>
 </section>
 
-<section id="about" class="wrap section">
-<div class="head">
-<p class="eyebrow">About the caviar</p>
-<h2 class="display">Fresh, unpasteurised, from one family farm</h2>
-</div>
-<div class="cols">
-<div>
-<div class="block"><h3 class="display">Origin</h3><p>Antonius Caviar raises its sturgeon on its own family farms in Poland. The fish spend the last stage in artesian water, and every tin can be traced back to the individual fish.</p></div>
-<div class="block"><h3 class="display">How it is made</h3><p>Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.</p></div>
-<div class="block"><h3 class="display">How to serve</h3><p>Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.</p></div>
-</div>
-<div style="gap:16px">
-<h3 class="display" style="font-size:26px">Ingredients and nutrition</h3>
-<p style="color:var(--soft)">Sturgeon roe (<strong>fish</strong>), salt, preservative E 285.</p>
-<div style="overflow-x:auto">
-<table>
-<caption>Average values per 100 g</caption>
-<thead><tr><th scope="col"><span class="sr">Nutrient</span></th><th scope="col">Siberian</th><th scope="col">Oscietra</th></tr></thead>
-<tbody>
-<tr><th scope="row">Energy</th><td>1024 kJ / 246 kcal</td><td>1104 kJ / 265 kcal</td></tr>
-<tr><th scope="row">Fat</th><td>16 g</td><td>17 g</td></tr>
-<tr><th scope="row">of which saturates</th><td>2.7 g</td><td>3.7 g</td></tr>
-<tr><th scope="row">Carbohydrate</th><td>1.5 g</td><td>2.1 g</td></tr>
-<tr><th scope="row">of which sugars</th><td>&lt; 0.5 g</td><td>&lt; 0.9 g</td></tr>
-<tr><th scope="row">Protein</th><td>24 g</td><td>27 g</td></tr>
-<tr><th scope="row">Salt</th><td>2.9 g</td><td>3.3 g</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</section>
-
-<section id="accessories" class="band">
-<div class="wrap section">
+<section id="accessories" class="wrap section">
 <div class="head">
 <p class="eyebrow">To serve</p>
 <h2 class="display">Spoon and tin opener</h2>
 </div>
 <div class="grid" id="extras"></div>
+</section>
+
+<section id="about" class="band">
+<div class="wrap section">
+<div class="head">
+<p class="eyebrow">About the caviar</p>
+<h2 class="display">Fresh, unpasteurised, from one family farm</h2>
+</div>
+<div class="three">
+<div><h3 class="display">Origin</h3><p>Antonius Caviar raises its sturgeon on its own family farms in Poland. The fish spend the last stage in artesian water, and every tin can be traced back to the individual fish.</p></div>
+<div><h3 class="display">How it is made</h3><p>Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.</p></div>
+<div><h3 class="display">How to serve</h3><p>Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.</p></div>
+</div>
 </div>
 </section>
 
@@ -227,21 +220,28 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 </div>
 </footer>
 
+<div id="cartBar" role="status" aria-live="polite">
+<div class="wrap">
+<p><strong id="barLast"></strong> <span id="barSum"></span></p>
+<a href="#order">Go to your order</a>
+</div>
+</div>
+
 <script>
 (function () {
   var FREE_FROM = 150;
   var feeCents = null;
   var PRODUCTS = [
-    { id: 'sib5', name: 'Siberian 5*', stars: 5, species: 'Siberian sturgeon', latin: 'Acipenser baerii', p30: 45, p50: 75,
+    { id: 'sib5', roe: 'Siberian sturgeon roe', nutrition: [['Energy','1024 kJ / 246 kcal'],['Fat','16 g'],['of which saturates','2.7 g'],['Carbohydrate','1.5 g'],['of which sugars','< 0.5 g'],['Protein','24 g'],['Salt','2.9 g']], name: 'Siberian 5*', stars: 5, species: 'Siberian sturgeon', latin: 'Acipenser baerii', p30: 45, p50: 75,
       desc: 'Intense and complex, with spicy, woody notes, mild salt and a clean, lasting finish.', grain: '2.6–2.7 mm, medium', aroma: 'Oyster, nori, umami',
       shots: ['caviar_siberian_5', 'siberian_caviar_5', 'siberian_label_5'] },
-    { id: 'sib6', name: 'Siberian 6*', stars: 6, species: 'Siberian sturgeon', latin: 'Acipenser baerii', p30: 60, p50: 100,
+    { id: 'sib6', roe: 'Siberian sturgeon roe', nutrition: [['Energy','1024 kJ / 246 kcal'],['Fat','16 g'],['of which saturates','2.7 g'],['Carbohydrate','1.5 g'],['of which sugars','< 0.5 g'],['Protein','24 g'],['Salt','2.9 g']], name: 'Siberian 6*', stars: 6, species: 'Siberian sturgeon', latin: 'Acipenser baerii', p30: 60, p50: 100,
       desc: 'The largest Siberian grain, from the most mature sturgeon. Intense, with spicy, woody notes and a clean finish.', grain: '2.7–3.2 mm, large', aroma: 'Oyster, nori, umami',
       shots: ['caviar_siberian_6', 'siberian_caviar_6', 'siberian_label_6'] },
-    { id: 'osc5', name: 'Oscietra 5*', stars: 5, species: 'Russian sturgeon', latin: 'Acipenser gueldenstaedtii', p30: 60, p50: 100,
+    { id: 'osc5', roe: 'Russian sturgeon roe', nutrition: [['Energy','1104 kJ / 265 kcal'],['Fat','17 g'],['of which saturates','3.7 g'],['Carbohydrate','2.1 g'],['of which sugars','< 0.9 g'],['Protein','27 g'],['Salt','3.3 g']], name: 'Oscietra 5*', stars: 5, species: 'Russian sturgeon', latin: 'Acipenser gueldenstaedtii', p30: 60, p50: 100,
       desc: 'Creamy and buttery, with nutty notes and delicate salt. Firm pearls that melt in the mouth.', grain: '2.9–3.0 mm, medium', aroma: 'Walnut, butter, algae',
       shots: ['caviar_oscietra_5', 'oscietra_caviar_5', 'oscietra_label_5'] },
-    { id: 'osc6', name: 'Oscietra 6*', stars: 6, species: 'Russian sturgeon', latin: 'Acipenser gueldenstaedtii', p30: 79.5, p50: 132.5,
+    { id: 'osc6', roe: 'Russian sturgeon roe', nutrition: [['Energy','1104 kJ / 265 kcal'],['Fat','17 g'],['of which saturates','3.7 g'],['Carbohydrate','2.1 g'],['of which sugars','< 0.9 g'],['Protein','27 g'],['Salt','3.3 g']], name: 'Oscietra 6*', stars: 6, species: 'Russian sturgeon', latin: 'Acipenser gueldenstaedtii', p30: 79.5, p50: 132.5,
       desc: 'The largest Oscietra grain, from sturgeon raised for up to 15 years. Buttery and nutty, delicate yet rich.', grain: 'Over 3.0 mm, large', aroma: 'Walnut, butter, algae',
       shots: ['caviar_oscietra_6', 'oscietra_caviar_6', 'oscietra_label_6'] }
   ];
@@ -274,13 +274,41 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     (kids || []).forEach(function (c) { n.appendChild(c); });
     return n;
   }
-  function add(key) { cart[key] = Math.min(20, (cart[key] || 0) + 1); errorText = ''; save(); renderCart(); }
+  var lastAdded = '', orderVisible = false;
+  function add(key, btn) {
+    cart[key] = Math.min(20, (cart[key] || 0) + 1); errorText = ''; save();
+    lastAdded = CATALOG[key].label + ' added.';
+    renderCart();
+    if (btn) {
+      btn.textContent = 'Added ✓'; btn.classList.add('added');
+      clearTimeout(btn._t);
+      btn._t = setTimeout(function () { btn.textContent = 'Add to order'; btn.classList.remove('added'); }, 1600);
+    }
+  }
+  function renderBar(count, total) {
+    var bar = document.getElementById('cartBar');
+    document.getElementById('barLast').textContent = lastAdded;
+    document.getElementById('barSum').textContent = count + (count === 1 ? ' item' : ' items') + ' in your order · ' + money(total);
+    var show = count > 0 && !orderVisible;
+    bar.classList.toggle('show', show);
+    document.body.style.paddingBottom = show ? bar.offsetHeight + 'px' : '';
+  }
   function change(key, d) {
     var q = (cart[key] || 0) + d;
     if (q <= 0) delete cart[key]; else cart[key] = Math.min(20, q);
     errorText = ''; save(); renderCart();
   }
 
+  var openFacts = {};
+  function nutritionBlock(p) {
+    var ingredients = el('p', {}, [document.createTextNode(p.roe + ' ('), el('strong', { text: 'fish' }), document.createTextNode('), salt, preservative E 285.')]);
+    var rows = p.nutrition.map(function (r) { return el('tr', {}, [el('th', { scope: 'row', text: r[0] }), el('td', { text: r[1] })]); });
+    var table = el('table', {}, [el('caption', { text: 'Average values per 100 g' }), el('tbody', {}, rows)]);
+    var d = el('details', {}, [el('summary', { text: 'Nutrition and ingredients' }), ingredients, table]);
+    if (openFacts[p.id]) d.setAttribute('open', '');
+    d.addEventListener('toggle', function () { openFacts[p.id] = d.open; });
+    return d;
+  }
   function renderProducts() {
     var root = document.getElementById('products');
     root.textContent = '';
@@ -314,7 +342,8 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
           el('p', { class: 'price', text: money(price) }),
           el('p', { class: 'small', style: 'font-size:13px', text: money(price / size) + ' / g' })
         ]),
-        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(p.id + '-' + size); } })
+        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(p.id + '-' + size, this); } }),
+        nutritionBlock(p)
       ]));
     });
   }
@@ -323,12 +352,12 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     EXTRAS.forEach(function (e) {
       root.appendChild(el('article', { class: 'card' }, [
         el('div', { class: 'shot' }, [el('img', { src: '/img/' + e.img + '.webp', alt: e.alt, loading: 'lazy' })]),
-        el('div', { style: 'display:flex;flex-direction:column;gap:6px;flex:1 1 auto' }, [
-          el('h3', { class: 'display', text: e.name }),
-          el('p', { class: 'desc', text: e.note })
+        el('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
+          el('h3', { class: 'display', style: 'min-height:2.2em', text: e.name }),
+          el('p', { class: 'desc note-h', text: e.note })
         ]),
         el('p', { class: 'price', text: money(e.price) }),
-        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(e.id); } })
+        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(e.id, this); } })
       ]));
     });
     root.appendChild(el('div', { class: 'spacer', 'aria-hidden': 'true' }));
@@ -340,6 +369,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     box.textContent = '';
     keys.forEach(function (k) { subtotal += CATALOG[k].price * cart[k]; count += cart[k]; });
     document.getElementById('cartCount').textContent = count;
+    renderBar(count, subtotal);
     if (!count) { box.appendChild(el('p', { class: 'small', style: 'font-size:16px', text: 'Your order is empty. Add a tin above to get started.' })); return; }
     var list = el('div', {}, keys.map(function (k) {
       var item = CATALOG[k];
@@ -385,6 +415,10 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
           : 'We could not open the payment page. Please try again, or write to sp@farmersandcompany.lt.';
         renderCart();
       });
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) { orderVisible = entries[0].isIntersecting; renderCart(); }, { threshold: 0.15 })
+      .observe(document.getElementById('order'));
   }
   window.addEventListener('pageshow', function () { busy = false; renderCart(); });
 
