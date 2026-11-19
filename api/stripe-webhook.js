@@ -6,7 +6,8 @@
 // cannot invent an order. A flag in the session's metadata prevents double sending.
 
 const FROM = process.env.ORDER_FROM || 'Farmers & Company <hello@farmersandcompany.lt>';
-const REPLY_TO = process.env.ORDER_REPLY_TO || 'hello@farmersandcompany.lt';
+// hello@ only sends; replies and customer questions go to Steffen.
+const REPLY_TO = process.env.ORDER_REPLY_TO || 'sp@farmersandcompany.lt';
 const NOTIFY_TO = process.env.ORDER_NOTIFY_TO || 'sp@farmersandcompany.lt';
 
 const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
