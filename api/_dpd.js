@@ -68,6 +68,8 @@ function pickupPlan(now = vilniusNow()) {
   return { date, from: WINDOW_FROM, to: WINDOW_TO, sameDay: false };
 }
 
+function fit(full, short) { return (full.length <= 35 ? full : String(short || full)).slice(0, 35); }
+
 function cleanPostal(code) { return String(code || '').replace(/^LT-?/i, '').replace(/\s+/g, ''); }
 
 function findShipment(data) {
@@ -88,7 +90,9 @@ async function createShipment(order) {
     senderAddress: (({ contactName, ...s }) => s)(sender()),
     receiverAddress: {
       name: order.name, email: order.email || undefined, phone: order.phone,
-      street: [a.line1, a.line2].filter(Boolean).join(', '), city: a.city, postalCode: cleanPostal(a.postal_code), country: a.country || 'LT',
+      // DPD allows 35 characters for street (street number and flat may be included).
+      street: fit([a.line1, a.line2].filter(Boolean).join(', '), a.line1), city: a.city,
+      contactInfo: order.note ? String(order.note).slice(0, 35) : undefined, postalCode: cleanPostal(a.postal_code), country: a.country || 'LT',
     },
     service: { serviceAlias: SERVICE },
     parcels: [{ weight: WEIGHT, mpsReferences: [order.ref] }],

@@ -50,6 +50,7 @@ function orderFacts(session) {
     email: details.email || '',
     phone: details.phone || '',
     address: a,
+    note: (((session.custom_fields || []).find((f) => f.key === 'delivery_note') || {}).text || {}).value || '',
     addressLines: [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean),
     items, shippingCents, totalCents: session.amount_total || 0,
   };
@@ -74,7 +75,7 @@ function customerMail(o) {
 <h2 style="margin:24px 0 6px;font-size:17px">Delivery</h2>
 <p style="margin:0 0 6px">We deliver your order chilled with DPD within 3 working days. DPD will also send you messages as the parcel moves.</p>
 ${o.parcel ? `<p style="margin:0 0 6px">DPD parcel number: <strong>${esc(o.parcel)}</strong> · <a href="${esc(DPD.trackingUrl(o.parcel))}" style="color:#0e2219">Track your parcel</a></p>` : ''}
-<p style="margin:0 0 18px">${o.addressLines.map(esc).join('<br>')}</p>
+<p style="margin:0 0 18px">${o.addressLines.map(esc).join('<br>')}${o.note ? `<br>Note for the courier: ${esc(o.note)}` : ''}</p>
 <h2 style="margin:0 0 6px;font-size:17px">When it arrives</h2>
 <p style="margin:0 0 18px">Put the tins in the fridge straight away, at −3 to +2 °C. Never freeze caviar. Once a tin is opened, enjoy it within 48 hours.</p>
 <p style="margin:0">Questions about your order? Reply to this email or write to <a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>.</p>`);
@@ -99,7 +100,7 @@ function internalMail(o) {
 ${dpdBanner(o)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o)}</table>
 <h2 style="margin:24px 0 6px;font-size:17px">Modtager</h2>
-<p style="margin:0">${esc(o.name)}<br>${o.addressLines.map(esc).join('<br>')}<br>Telefon: ${esc(o.phone) || 'ikke oplyst'}<br>Mail: ${esc(o.email)}</p>`);
+<p style="margin:0">${esc(o.name)}<br>${o.addressLines.map(esc).join('<br>')}<br>Telefon: ${esc(o.phone) || 'ikke oplyst'}<br>Mail: ${esc(o.email)}${o.note ? `<br><strong>Besked til kureren: ${esc(o.note)}</strong>` : ''}</p>`);
 }
 
 // Creates the DPD shipment, label and pickup. Never throws: a DPD problem must not stop the order mails.

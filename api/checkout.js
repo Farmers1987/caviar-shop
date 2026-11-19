@@ -45,6 +45,13 @@ module.exports = async (req, res) => {
   params.append('shipping_address_collection[allowed_countries][0]', 'LT');
   params.append('phone_number_collection[enabled]', 'true');
   params.append('adaptive_pricing[enabled]', 'false');
+  // Optional note for the courier. 35 characters is what DPD prints on the label.
+  params.append('custom_fields[0][key]', 'delivery_note');
+  params.append('custom_fields[0][type]', 'text');
+  params.append('custom_fields[0][label][type]', 'custom');
+  params.append('custom_fields[0][label][custom]', 'Note for the courier (door code, floor)');
+  params.append('custom_fields[0][optional]', 'true');
+  params.append('custom_fields[0][text][maximum_length]', '35');
   params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
   params.append('shipping_options[0][shipping_rate_data][display_name]', 'Chilled delivery in Lithuania, within 3 working days');
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(fee));
