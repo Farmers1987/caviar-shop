@@ -4,6 +4,9 @@
 // The event body is not trusted. The handler only takes the session id from it and
 // then reads the session back from Stripe with the secret key, so a forged request
 // cannot invent an order. A flag in the session's metadata prevents double sending.
+// When DPD_MODE is set, it also books the DPD shipment first (see _dpd.js).
+
+const DPD = require('./_dpd.js');
 
 const FROM = process.env.ORDER_FROM || 'Farmers & Company <hello@farmersandcompany.lt>';
 // hello@ only sends; replies and customer questions go to Steffen.
@@ -46,6 +49,7 @@ function orderFacts(session) {
     name: shipping.name || details.name || '',
     email: details.email || '',
     phone: details.phone || '',
+    address: a,
     addressLines: [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean),
     items, shippingCents, totalCents: session.amount_total || 0,
   };
@@ -68,19 +72,71 @@ function customerMail(o) {
 <p style="margin:0 0 18px">Hello ${esc(o.name)}, we have received your order and your payment. Order reference: <strong>${esc(o.ref)}</strong>.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o)}</table>
 <h2 style="margin:24px 0 6px;font-size:17px">Delivery</h2>
-<p style="margin:0 0 6px">We deliver your order chilled with DPD within 3 working days. DPD will send you a message with tracking when the parcel is on its way.</p>
+<p style="margin:0 0 6px">We deliver your order chilled with DPD within 3 working days. DPD will also send you messages as the parcel moves.</p>
+${o.parcel ? `<p style="margin:0 0 6px">DPD parcel number: <strong>${esc(o.parcel)}</strong> · <a href="${esc(DPD.trackingUrl(o.parcel))}" style="color:#0e2219">Track your parcel</a></p>` : ''}
 <p style="margin:0 0 18px">${o.addressLines.map(esc).join('<br>')}</p>
 <h2 style="margin:0 0 6px;font-size:17px">When it arrives</h2>
 <p style="margin:0 0 18px">Put the tins in the fridge straight away, at −3 to +2 °C. Never freeze caviar. Once a tin is opened, enjoy it within 48 hours.</p>
 <p style="margin:0">Questions about your order? Reply to this email or write to <a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>.</p>`);
 }
 
+function dpdBanner(o) {
+  const box = (bg, html) => `<p style="margin:0 0 18px;padding:12px 14px;background:${bg}">${html}</p>`;
+  const d = o.dpd || {};
+  if (d.error) return box('#f3c9bf', `<strong>DPD-forsendelsen kunne ikke oprettes automatisk.</strong> Opret den og bestil afhentning i DPD-portalen i dag. Fejl: ${esc(d.error)}`);
+  if (!o.parcel) return box('#f6e7b0', '<strong>Bestil DPD-afhentning i dag.</strong> Kunden er lovet levering inden for 3 hverdage.');
+  let pickup;
+  if (d.pickup === 'booked') pickup = `Afhentning er bestilt ${esc(d.plan.date)} kl. ${esc(d.plan.from)}–${esc(d.plan.to)}.`;
+  else if (d.pickup === 'existing') pickup = `Der er allerede bestilt afhentning ${esc(d.plan.date)}; pakken skal med den.`;
+  else if (d.pickup === 'failed') pickup = `<strong>Afhentningen kunne ikke bestilles automatisk; bestil den i DPD-portalen i dag.</strong> Fejl: ${esc(d.pickupError)}`;
+  else pickup = '<strong>Afhentning er ikke bestilt (testtilstand); bestil den i DPD-portalen.</strong>';
+  const late = d.plan && !d.plan.sameDay && d.pickup !== 'off' ? ' Ordren kom efter dagens frist, så den hentes næste hverdag.' : '';
+  return box('#dff0e4', `<strong>DPD-forsendelse oprettet: ${esc(o.parcel)}.</strong> Labelen er vedhæftet; print den og sæt den på kølekassen. ${pickup}${late}`);
+}
+
 function internalMail(o) {
   return shell(`<h1 style="margin:0 0 14px;font-size:24px">Ny caviar-ordre ${esc(o.ref)}</h1>
-<p style="margin:0 0 18px;padding:12px 14px;background:#f6e7b0"><strong>Bestil DPD-afhentning i dag.</strong> Kunden er lovet levering inden for 3 hverdage.</p>
+${dpdBanner(o)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o)}</table>
 <h2 style="margin:24px 0 6px;font-size:17px">Modtager</h2>
 <p style="margin:0">${esc(o.name)}<br>${o.addressLines.map(esc).join('<br>')}<br>Telefon: ${esc(o.phone) || 'ikke oplyst'}<br>Mail: ${esc(o.email)}</p>`);
+}
+
+// Creates the DPD shipment, label and pickup. Never throws: a DPD problem must not stop the order mails.
+async function shipWithDpd(session, o, key) {
+  const m = DPD.mode();
+  if (m === 'off' || !process.env.DPD_API_TOKEN) return;
+  const meta = session.metadata || {};
+  o.dpd = {};
+  try {
+    let shipmentId = meta.dpd_shipment, parcel = meta.dpd_parcel;
+    if (!shipmentId) {
+      const created = await DPD.createShipment(o);
+      shipmentId = created.id; parcel = created.parcel;
+      // Saved straight away so a retry by Stripe never creates a second shipment.
+      await stripe(`checkout/sessions/${session.id}`, key, new URLSearchParams({ 'metadata[dpd_shipment]': shipmentId, 'metadata[dpd_parcel]': parcel }).toString());
+    }
+    o.parcel = parcel;
+    try { o.label = await DPD.labelPdf(shipmentId); } catch (e) { console.error('DPD label failed', e.message); }
+
+    const plan = DPD.pickupPlan();
+    o.dpd.plan = plan;
+    if (m !== 'full') { o.dpd.pickup = 'off'; return; }
+    if (meta.dpd_pickup_date) { o.dpd.pickup = 'booked'; return; }
+    // One pickup per day: look for another order today that already booked it.
+    const since = Math.floor(Date.now() / 1000) - 3 * 86400;
+    const others = await stripe(`checkout/sessions?limit=100&created[gte]=${since}`, key);
+    const taken = others.ok && (others.data.data || []).some((x) => x.id !== session.id && x.metadata && x.metadata.dpd_pickup_date === plan.date);
+    if (taken) { o.dpd.pickup = 'existing'; return; }
+    try {
+      await DPD.orderPickup(plan, shipmentId);
+      o.dpd.pickup = 'booked';
+      await stripe(`checkout/sessions/${session.id}`, key, new URLSearchParams({ 'metadata[dpd_pickup_date]': plan.date }).toString());
+    } catch (e) { o.dpd.pickup = 'failed'; o.dpd.pickupError = e.message.slice(0, 200); console.error('DPD pickup failed', e.message); }
+  } catch (e) {
+    o.dpd.error = e.message.slice(0, 200);
+    console.error('DPD shipment failed', e.message);
+  }
 }
 
 module.exports = async (req, res) => {
@@ -104,7 +160,9 @@ module.exports = async (req, res) => {
     if (session.metadata && session.metadata.mails_sent === '1') return res.status(200).json({ done: true });
 
     const o = orderFacts(session);
-    await sendMail(mailKey, id + '-internal', { from: FROM, to: [NOTIFY_TO], reply_to: o.email || REPLY_TO, subject: `Ny caviar-ordre ${o.ref}: bestil DPD-afhentning i dag`, html: internalMail(o) });
+    await shipWithDpd(session, o, key);
+    await sendMail(mailKey, id + '-internal', { from: FROM, to: [NOTIFY_TO], reply_to: o.email || REPLY_TO, subject: o.parcel && !(o.dpd && o.dpd.pickup === 'failed') ? `Ny caviar-ordre ${o.ref}: label vedhæftet` : `Ny caviar-ordre ${o.ref}: bestil DPD-afhentning i dag`, html: internalMail(o),
+      attachments: o.label ? [{ filename: `DPD-label-${o.ref}.pdf`, content: o.label }] : undefined });
     if (o.email) {
       await sendMail(mailKey, id + '-customer', { from: FROM, to: [o.email], reply_to: REPLY_TO, subject: `Your caviar order ${o.ref} – Farmers & Company`, html: customerMail(o) });
     }
