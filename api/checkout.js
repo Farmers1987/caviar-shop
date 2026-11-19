@@ -39,6 +39,9 @@ module.exports = async (req, res) => {
   const origin = `https://${host}`;
 
   params.append('mode', 'payment');
+  // Only cards (incl. Apple Pay and Google Pay) and Stripe Link, whatever the account has switched on.
+  params.append('payment_method_types[0]', 'card');
+  params.append('payment_method_types[1]', 'link');
   params.append('success_url', `${origin}/success.html`);
   params.append('cancel_url', `${origin}/#order`);
   params.append('shipping_address_collection[allowed_countries][0]', 'LT');
