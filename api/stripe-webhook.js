@@ -25,7 +25,8 @@ async function sendMail(apiKey, idempotencyKey, mail) {
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
-    body: JSON.stringify(mail),
+    // The tag lets these mails be filtered apart from other projects in the same mail account.
+    body: JSON.stringify(Object.assign({ tags: [{ name: 'project', value: 'caviar-shop' }] }, mail)),
   });
   if (!r.ok) throw new Error('mail ' + r.status + ' ' + (await r.text()).slice(0, 200));
 }
