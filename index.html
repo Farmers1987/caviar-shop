@@ -31,10 +31,15 @@ p,h1,h2,h3,dl,dd{margin:0}
 .btn:hover{color:var(--ground);background:#A6DEBB}
 .btn[disabled]{opacity:.6;cursor:default}
 header .bar{padding-top:18px;padding-bottom:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px}
-header{border-bottom:1px solid var(--line)}
+header{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:15;background:var(--ground);transition:background .4s ease,box-shadow .4s ease}
+header.scrolled{background:rgba(14,34,25,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+header.scrolled .bar{padding-top:10px;padding-bottom:10px}
+header .bar{transition:padding .4s ease}
+header img{transition:height .4s ease}
+header.scrolled .logo{height:48px!important}
 nav{display:flex;flex-wrap:wrap;gap:8px 32px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 nav a{text-decoration:none;padding:12px 0}
-.cartlink{text-decoration:none;border:1px solid var(--accent);color:var(--accent);padding:11px 22px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.cartlink{transition:background .3s ease,color .3s ease;display:inline-block;text-decoration:none;border:1px solid var(--accent);color:var(--accent);padding:11px 22px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 .hero{padding-top:72px;padding-bottom:88px;display:flex;flex-wrap:wrap;align-items:center;gap:48px}
 .hero>div{flex:1 1 440px;min-width:0}
 .hero .copy{display:flex;flex-direction:column;gap:28px}
@@ -42,12 +47,39 @@ nav a{text-decoration:none;padding:12px 0}
 .hero .tins{display:flex;align-items:center;justify-content:center}
 .hero .tins img{width:56%;height:auto}
 .hero .tins img+img{margin-left:-14%;margin-top:22%}
+.hero .tins img{will-change:transform;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.hero .tins{perspective:900px}
+.tin-a{animation:floatA 7s ease-in-out infinite}
+.tin-b{animation:floatB 8s ease-in-out infinite}
+@keyframes floatA{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes floatB{0%,100%{translate:0 0}50%{translate:0 8px}}
+.hero .copy>*{opacity:0;animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+.hero .copy>*:nth-child(2){animation-delay:.1s}.hero .copy>*:nth-child(3){animation-delay:.2s}.hero .copy>*:nth-child(4){animation-delay:.3s}.hero .copy>*:nth-child(5){animation-delay:.4s}
+.hero .tins{opacity:0;animation:rise 1.2s .25s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.btn{transition:background .3s ease,transform .3s ease,box-shadow .3s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(143,211,168,.18)}
+.btn:active{transform:translateY(0)}
+.shine{position:relative;overflow:hidden}
+.shine::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:shine 5s 1.6s ease-in-out infinite}
+@keyframes shine{0%{left:-60%}22%,100%{left:130%}}
+.bump{animation:bump .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.12);background:var(--accent);color:var(--ground)}100%{transform:scale(1)}}
+.flyer{position:fixed;z-index:30;pointer-events:none;object-fit:contain;border-radius:50%}
+.swap{animation:swap .45s ease}
+@keyframes swap{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 .xmas{border-top:1px solid var(--line);padding-top:20px;display:flex;gap:14px;align-items:baseline;max-width:520px}
 .grid{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
-.card{flex:1 1 250px;min-width:0;background:var(--card);border:1px solid var(--line);padding:28px 24px 24px;display:flex;flex-direction:column;gap:18px}
+.card{flex:1 1 250px;min-width:0;background:var(--card);border:1px solid var(--line);padding:28px 24px 24px;display:flex;flex-direction:column;gap:18px;transition:transform .5s cubic-bezier(.2,.7,.2,1),border-color .5s ease,box-shadow .5s ease}
+.card:hover{transform:translateY(-6px);border-color:#3d6450;box-shadow:0 24px 48px rgba(0,0,0,.35)}
 .spacer{flex:1 1 250px;min-width:0;height:0}
 .shot{aspect-ratio:4/3;position:relative}
-.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.card:hover .shot img{transform:scale(1.05) rotate(-2deg)}
+.thumbs button{transition:border-color .3s ease,transform .3s ease}.thumbs button:hover{transform:translateY(-2px)}
+.sizes button{transition:background .3s ease,color .3s ease,border-color .3s ease}
 .thumbs{display:flex;justify-content:center;gap:8px}
 .thumbs button{width:56px;height:56px;padding:4px;background:var(--band);border:1px solid var(--line)}
 .thumbs button[aria-pressed=true]{border-color:var(--accent)}
@@ -107,14 +139,14 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 #cartBar strong{font-weight:600}
 #cartBar a{text-decoration:none;background:var(--ground);color:var(--text);padding:13px 26px;font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
 #cartBar a:hover{color:var(--accent)}
-@media (prefers-reduced-motion:reduce){#cartBar{transition:none}html{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){#cartBar{transition:none}html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.reveal,.hero .copy>*,.hero .tins{opacity:1!important;transform:none!important}}
 @media (max-width:640px){#products .desc,.note-h{min-height:0}.wrap{padding-left:20px;padding-right:20px}.order .box{padding:20px}}
 </style>
 </head>
 <body>
 <header>
 <div class="wrap bar">
-<a href="#top"><img src="/img/logo_light.png" alt="Farmers &amp; Company" style="height:64px;width:auto"></a>
+<a href="#top"><img class="logo" src="/img/logo_light.png" alt="Farmers &amp; Company" style="height:64px;width:auto"></a>
 <nav aria-label="Main">
 <a href="#caviar">Caviar</a>
 <a href="#accessories">Accessories</a>
@@ -132,7 +164,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <h1 class="display">Caviar for the Christmas table, delivered to your door.</h1>
 <p style="font-size:18px;color:var(--soft);max-width:520px">Siberian and Oscietra in 30 g and 50 g tins. Delivered chilled, anywhere in Lithuania, within 3 working days.</p>
 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px">
-<a class="btn" href="#caviar">Choose your caviar</a>
+<a class="btn shine" href="#caviar">Choose your caviar</a>
 <p class="small">We deliver in Lithuania only. Free delivery from 150 €.</p>
 </div>
 <div class="xmas">
@@ -141,8 +173,8 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 </div>
 </div>
 <div class="tins">
-<img src="/img/oscietra_caviar_6.webp" alt="Open tin of Oscietra caviar" width="1000" height="1000">
-<img src="/img/siberian_label_6.webp" alt="Antonius Caviar Siberian tin" width="1000" height="995">
+<img class="tin-a" src="/img/oscietra_caviar_6.webp" alt="Open tin of Oscietra caviar" width="1000" height="1000">
+<img class="tin-b" src="/img/siberian_label_6.webp" alt="Antonius Caviar Siberian tin" width="1000" height="995">
 </div>
 </section>
 
@@ -280,6 +312,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     lastAdded = CATALOG[key].label + ' added.';
     renderCart();
     if (btn) {
+      if (window.__fly) window.__fly(btn);
       btn.textContent = 'Added ✓'; btn.classList.add('added');
       clearTimeout(btn._t);
       btn._t = setTimeout(function () { btn.textContent = 'Add to order'; btn.classList.remove('added'); }, 1600);
@@ -309,6 +342,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     d.addEventListener('toggle', function () { openFacts[p.id] = d.open; });
     return d;
   }
+  var changed = null, changedPrice = null;
   function renderProducts() {
     var root = document.getElementById('products');
     root.textContent = '';
@@ -317,14 +351,14 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       var price = size === 30 ? p.p30 : p.p50;
       var thumbs = el('div', { class: 'thumbs', role: 'group', 'aria-label': 'Product images' }, p.shots.map(function (s, i) {
         return el('button', { type: 'button', 'aria-label': p.name + ': ' + SHOT_LABELS[i], 'aria-pressed': String(i === shot),
-          onclick: function () { shots[p.id] = i; renderProducts(); } }, [el('img', { src: '/img/' + s + '.webp', alt: '', loading: 'lazy' })]);
+          onclick: function () { shots[p.id] = i; changed = p.id; renderProducts(); } }, [el('img', { src: '/img/' + s + '.webp', alt: '', loading: 'lazy' })]);
       }));
       var sizeBtns = el('div', { class: 'sizes', role: 'group', 'aria-label': 'Tin size' }, [30, 50].map(function (g) {
         return el('button', { type: 'button', text: g + ' g', 'aria-pressed': String(g === size),
-          onclick: function () { sizes[p.id] = g; renderProducts(); } });
+          onclick: function () { sizes[p.id] = g; changedPrice = p.id; renderProducts(); } });
       }));
       root.appendChild(el('article', { class: 'card' }, [
-        el('div', { class: 'shot' }, [el('img', { src: '/img/' + p.shots[shot] + '.webp', alt: 'Antonius Caviar ' + p.name })]),
+        el('div', { class: 'shot' }, [el('img', { class: changed === p.id ? 'swap' : '', src: '/img/' + p.shots[shot] + '.webp', alt: 'Antonius Caviar ' + p.name })]),
         thumbs,
         el('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
           el('p', { class: 'stars', role: 'img', 'aria-label': p.stars + ' stars', text: new Array(p.stars + 1).join('★') }),
@@ -339,7 +373,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
         ]),
         sizeBtns,
         el('div', { class: 'pricerow' }, [
-          el('p', { class: 'price', text: money(price) }),
+          el('p', { class: changedPrice === p.id ? 'price swap' : 'price', text: money(price) }),
           el('p', { class: 'small', style: 'font-size:13px', text: money(price / size) + ' / g' })
         ]),
         el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(p.id + '-' + size, this); } }),
@@ -423,6 +457,52 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
   window.addEventListener('pageshow', function () { busy = false; renderCart(); });
 
   renderProducts(); renderExtras(); renderCart();
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Sticky header gets a frosted look once the visitor scrolls.
+  var header = document.querySelector('header');
+  function onScroll() { header.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  // Sections and cards fade up as they come into view.
+  if (!reduce && 'IntersectionObserver' in window) {
+    var targets = document.querySelectorAll('.section .head, .card, .three > div, .order .intro, .order .box');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    targets.forEach(function (t, i) { t.classList.add('reveal'); t.style.transitionDelay = (t.classList.contains('card') ? (Array.prototype.indexOf.call(t.parentNode.children, t) % 4) * 0.08 : 0) + 's'; io.observe(t); });
+  }
+  // The hero tins follow the pointer a little.
+  var tins = document.querySelector('.hero .tins');
+  if (!reduce && tins && window.matchMedia('(pointer: fine)').matches) {
+    var a = tins.querySelector('.tin-a'), b = tins.querySelector('.tin-b');
+    document.querySelector('.hero').addEventListener('mousemove', function (e) {
+      var r = tins.getBoundingClientRect();
+      var x = (e.clientX - (r.left + r.width / 2)) / r.width, y = (e.clientY - (r.top + r.height / 2)) / r.height;
+      a.style.transform = 'translate(' + (x * -14) + 'px,' + (y * -10) + 'px) rotateY(' + (x * 8) + 'deg)';
+      b.style.transform = 'translate(' + (x * 18) + 'px,' + (y * 12) + 'px) rotateY(' + (x * -8) + 'deg)';
+    });
+    document.querySelector('.hero').addEventListener('mouseleave', function () { a.style.transform = ''; b.style.transform = ''; });
+  }
+  // A small image of the product flies to "Your order" when it is added.
+  window.__fly = function (btn) {
+    var link = document.querySelector('.cartlink');
+    if (!link) return;
+    var card = btn.closest('.card'), img = card && card.querySelector('.shot img');
+    if (!reduce && img && img.animate) {
+      var from = img.getBoundingClientRect(), to = link.getBoundingClientRect();
+      var size = Math.min(from.width, from.height) * 0.6;
+      var f = img.cloneNode(); f.className = 'flyer'; f.removeAttribute('alt'); f.setAttribute('aria-hidden', 'true');
+      f.style.width = size + 'px'; f.style.height = size + 'px';
+      f.style.left = (from.left + from.width / 2 - size / 2) + 'px'; f.style.top = (from.top + from.height / 2 - size / 2) + 'px';
+      document.body.appendChild(f);
+      var dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2);
+      f.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: 'translate(' + dx * 0.5 + 'px,' + (dy * 0.5 - 60) + 'px) scale(.5)', opacity: .95, offset: .55 },
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.12)', opacity: .2 }
+      ], { duration: 750, easing: 'cubic-bezier(.5,0,.2,1)' }).onfinish = function () { f.remove(); bump(link); };
+    } else { bump(link); }
+  };
+  function bump(link) { link.classList.remove('bump'); void link.offsetWidth; link.classList.add('bump'); }
   fetch('/api/config').then(function (r) { return r.json(); }).then(function (c) {
     if (typeof c.shippingFeeCents === 'number') {
       feeCents = c.shippingFeeCents;
