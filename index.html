@@ -146,6 +146,13 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .qty button[disabled]{opacity:.35;cursor:not-allowed}
 .capnote{flex-basis:100%;font-size:13px;color:#F1DFA8}
+/* Caviar cards: every row (text, facts, sizes, price, button…) lines up across the cards. */
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px 24px;align-items:start}
+#products .card{min-width:0}
+@supports (grid-template-rows:subgrid){
+#products .card{display:grid;grid-row:span 10;grid-template-rows:subgrid;row-gap:18px}
+#products .desc{min-height:0}
+}
 .btn.added{background:var(--text)}
 #cartBar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--text);color:var(--ground);box-shadow:0 -6px 24px rgba(0,0,0,.35);transform:translateY(110%);transition:transform .25s ease}
 #cartBar.show{transform:none}
