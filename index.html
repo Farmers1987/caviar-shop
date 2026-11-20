@@ -96,8 +96,10 @@ nav a{text-decoration:none;padding:12px 0}
 .desc{font-size:15px;color:var(--soft)}
 #products .desc{min-height:6.2em}
 .note-h{min-height:3.1em}
-.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;border-top:1px solid var(--line);padding-top:14px}
-.facts dt{color:var(--muted)}
+.facts{display:grid;grid-template-columns:1fr;gap:2px;align-content:start;font-size:14px;line-height:1.45;border-top:1px solid var(--line);padding-top:14px}
+.facts dt{color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.facts dd{color:var(--text)}
+.facts dd+dt{margin-top:10px}
 .sizes{display:flex;gap:8px}
 .sizes button{flex:1 1 0;min-height:46px;background:transparent;color:var(--text);border:1px solid var(--line2);font-size:15px}
 .sizes button[aria-pressed=true]{background:var(--text);color:var(--ground);border-color:var(--text);font-weight:600}
