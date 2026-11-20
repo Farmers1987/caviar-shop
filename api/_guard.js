@@ -54,13 +54,13 @@ async function adminLocked(req) {
   try {
     const mine = await recent('admin-fail', visitor(req), ADMIN_WINDOW);
     const all = await recent('admin-fail', '', ADMIN_WINDOW);
-    if (mine >= 5 || all >= 30) { console.warn('admin locked', { mine, all }); return true; }
+    if (mine >= 5 || all >= 30) { console.warn('admin locked', { who: visitor(req).slice(0, 6), mine, all }); return true; }
     return false;
   } catch (e) { console.error('guard skipped', e.message); return false; }
 }
 async function adminFailed(req) {
   if (!token()) return;
-  try { await record('admin-fail', visitor(req)); } catch (e) { console.error('guard record', e.message); }
+  try { const v = visitor(req); console.warn('admin wrong password', v.slice(0, 6)); await record('admin-fail', v); } catch (e) { console.error('guard record', e.message); }
 }
 
 module.exports = { over, adminLocked, adminFailed };
