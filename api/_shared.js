@@ -8,8 +8,8 @@ const CATALOG = {
   'osc5-50': { name: 'Antonius Caviar Oscietra 5*, 50 g', cents: 10000 },
   'osc6-30': { name: 'Antonius Caviar Oscietra 6*, 30 g', cents: 7950 },
   'osc6-50': { name: 'Antonius Caviar Oscietra 6*, 50 g', cents: 13250 },
-  spoon: { name: 'Mother-of-pearl caviar spoon', lt: 'Perlamutrinis ikrų šaukštelis', cents: 1500 },
-  opener: { name: 'Caviar tin opener', lt: 'Ikrų skardinės atidarytuvas', cents: 1500 },
+  spoon: { name: 'Mother-of-pearl caviar spoon', lt: 'Perlamutrinis šaukštelis ikrams', cents: 1500 },
+  opener: { name: 'Caviar tin opener', lt: 'Ikrų skardinių atidarytuvas', cents: 1500 },
 };
 
 const FREE_FROM_CENTS = 15000;

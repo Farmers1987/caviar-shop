@@ -74,57 +74,92 @@ const shell = (inner) => `<!doctype html><html><body style="margin:0;background:
 </table></td></tr></table></body></html>`;
 
 // Customer-facing texts. Danish is used only in the internal mail to us.
+// The Lithuanian wording was reviewed by our marketing colleague; English follows the same structure.
 const L = {
   en: {
     subject: (r) => `Your caviar order ${r} – Farmers & Company`,
-    delivery: 'Delivery in Lithuania', free: 'Free', total: 'Total incl. VAT',
     thanks: 'Thank you for your order',
-    hello: (n, r) => `Hello ${n}, we have received your order and your payment. Order reference: <strong>${r}</strong>.`,
+    hello: (n) => `Hello ${n},`,
+    received: (r) => `we have received your order and your payment. Your order number is <strong>${r}</strong>.`,
+    item: 'Item', qty: 'Qty', amount: 'Amount',
+    itemName: (name) => name,
+    delivery: 'Delivery in Lithuania', free: 'Free', total: 'Total incl. VAT',
     hDelivery: 'Delivery',
-    deliveryText: 'We deliver your order chilled with DPD within 3 working days. DPD will also send you messages as the parcel moves.',
-    parcel: 'DPD parcel number', track: 'Track your parcel', note: 'Note for the courier',
-    hArrives: 'When it arrives',
-    arrives: 'Put the tins in the fridge straight away, at −3 to +2 °C. Never freeze caviar. Once a tin is opened, enjoy it within 48 hours. The best-before date is printed on each tin.',
-    questions: (m) => `Questions about your order? Reply to this email or write to ${m}.`,
-    legal: (w, t, p) => `Caviar cannot be returned unless it is faulty. The spoon and tin opener can be returned within 14 days: ${w('withdraw from contract here')}. Read our ${t('terms of sale')} and ${p('privacy policy')}.`,
+    deliveryText: 'DPD will deliver your order within 3 working days. The products are kept chilled during delivery. DPD will keep you informed about your parcel by message.',
+    parcel: 'DPD parcel number', track: 'Track your parcel',
+    hAddress: 'Delivery address', country: { LT: 'Lithuania' }, note: 'Note for the courier',
+    hStorage: 'Storing the caviar',
+    storage: 'When the parcel arrives, put the caviar in the fridge straight away and keep it at −3 °C to +2 °C. Do not freeze the caviar. Once a tin is opened, enjoy it within 48 hours. The best-before date is printed on each tin.',
+    hQuestions: 'Questions and returns',
+    questions: (m) => `If you have questions about your order, reply to this email or write to ${m}.`,
+    returns: 'The 14-day right of withdrawal does not apply to caviar. If a product is faulty, please contact us. The caviar spoon and the tin opener can be returned within 14 days of receiving them.',
+    links: ['Withdraw from contract', 'Terms of sale', 'Privacy policy'],
+    bye: 'Kind regards,', team: 'The Farmers & Company team',
     sfx: '',
   },
   lt: {
     subject: (r) => `Jūsų ikrų užsakymas ${r} – Farmers & Company`,
-    delivery: 'Pristatymas Lietuvoje', free: 'Nemokamai', total: 'Iš viso su PVM',
     thanks: 'Dėkojame už užsakymą',
-    hello: (n, r) => `Sveiki, ${n}, gavome jūsų užsakymą ir apmokėjimą. Užsakymo numeris: <strong>${r}</strong>.`,
+    hello: (n) => `Sveiki, ${n},`,
+    received: (r) => `gavome Jūsų užsakymą ir apmokėjimą. Jūsų užsakymo numeris – <strong>${r}</strong>.`,
+    item: 'Prekė', qty: 'Kiekis', amount: 'Suma',
+    // "Antonius Caviar Siberian 6*, 30 g" → „Antonius Caviar Siberian 6*“ ikrai, 30 g
+    itemName: (name) => { const m = /^(Antonius Caviar [^,]+), (.+)$/.exec(name); return m ? `„${m[1]}“ ikrai, ${m[2]}` : name; },
+    delivery: 'Pristatymas Lietuvoje', free: 'Nemokamas', total: 'Iš viso su PVM',
     hDelivery: 'Pristatymas',
-    deliveryText: 'Jūsų užsakymą atvėsintą pristatys DPD per 3 darbo dienas. DPD taip pat informuos jus apie siuntos judėjimą.',
-    parcel: 'DPD siuntos numeris', track: 'Sekti siuntą', note: 'Žinutė kurjeriui',
-    hArrives: 'Kai siunta atkeliaus',
-    arrives: 'Skardines iš karto padėkite į šaldytuvą, nuo −3 iki +2 °C. Ikrų niekada neužšaldykite. Atidarytus suvalgykite per 48 valandas. Tinkamumo vartoti terminas nurodytas ant kiekvienos skardinės.',
-    questions: (m) => `Turite klausimų dėl užsakymo? Atsakykite į šį laišką arba rašykite ${m}.`,
-    legal: (w, t, p) => `Ikrai negali būti grąžinami, nebent yra su trūkumais. Šaukštelį ir skardinės atidarytuvą galima grąžinti per 14 dienų: ${w('atsisakyti sutarties čia')}. Susipažinkite su mūsų ${t('pardavimo taisyklėmis')} ir ${p('privatumo politika')}.`,
+    deliveryText: 'Jūsų užsakymą per 3 darbo dienas pristatys DPD. Pristatymo metu prekės bus laikomos atšaldytos. Apie siuntos eigą DPD Jus informuos pranešimais.',
+    parcel: 'DPD siuntos numeris', track: 'Sekti siuntą',
+    hAddress: 'Pristatymo adresas', country: { LT: 'Lietuva' }, note: 'Pastaba kurjeriui',
+    hStorage: 'Ikrų laikymas',
+    storage: 'Gavę siuntą, ikrus iš karto įdėkite į šaldytuvą ir laikykite nuo −3 °C iki +2 °C temperatūroje. Ikrų neužšaldykite. Atidarius pakuotę, ikrus suvartokite per 48 valandas. Data „Geriausias iki“ nurodyta ant kiekvienos pakuotės.',
+    hQuestions: 'Klausimai ir prekių grąžinimas',
+    questions: (m) => `Jei turite klausimų dėl užsakymo, atsakykite į šį laišką arba parašykite ${m}.`,
+    returns: 'Ikrams 14 dienų sutarties atsisakymo teisė netaikoma. Jei gavote nekokybišką prekę, susisiekite su mumis. Ikrų šaukštelį ir skardinių atidarytuvą galite grąžinti per 14 dienų nuo prekės gavimo.',
+    links: ['Atsisakyti pirkimo sutarties', 'Pirkimo taisyklės', 'Privatumo politika'],
+    bye: 'Pagarbiai', team: '„Farmers & Company“ komanda',
     sfx: '-lt',
   },
 };
 
-const itemRows = (o, t) => o.items.map((i) =>
-  `<tr><td style="padding:8px 0;border-bottom:1px solid #e3e0d6">${esc(i.qty)} × ${esc(i.name)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #e3e0d6;white-space:nowrap">${money(i.total)}</td></tr>`).join('') +
-  `<tr><td style="padding:8px 0;border-bottom:1px solid #e3e0d6">${t.delivery}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #e3e0d6;white-space:nowrap">${o.shippingCents ? money(o.shippingCents) : t.free}</td></tr>` +
-  `<tr><td style="padding:10px 0"><strong>${t.total}</strong></td><td align="right" style="padding:10px 0;white-space:nowrap"><strong>${money(o.totalCents)}</strong></td></tr>`;
+const td = 'padding:9px 0;border-bottom:1px solid #e3e0d6;vertical-align:top';
+const itemRows = (o, t) =>
+  `<tr><th align="left" style="padding:0 0 6px;border-bottom:1px solid #c9c4b4;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4c5a52;font-weight:600">${t.item}</th>`
+  + `<th align="center" style="padding:0 8px 6px;border-bottom:1px solid #c9c4b4;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4c5a52;font-weight:600;width:60px">${t.qty}</th>`
+  + `<th align="right" style="padding:0 0 6px;border-bottom:1px solid #c9c4b4;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4c5a52;font-weight:600;width:90px">${t.amount}</th></tr>`
+  + o.items.map((i) => `<tr><td style="${td}">${esc(t.itemName(i.name))}</td><td align="center" style="${td};padding-left:8px;padding-right:8px">${esc(i.qty)}</td><td align="right" style="${td};white-space:nowrap">${money(i.total)}</td></tr>`).join('')
+  + `<tr><td colspan="2" style="${td}">${t.delivery}</td><td align="right" style="${td};white-space:nowrap">${o.shippingCents ? money(o.shippingCents) : t.free}</td></tr>`
+  + `<tr><td colspan="2" style="padding:11px 0"><strong>${t.total}</strong></td><td align="right" style="padding:11px 0;white-space:nowrap"><strong>${money(o.totalCents)}</strong></td></tr>`;
+
+function addressBlock(o, t) {
+  const a = o.address || {};
+  const street = [a.line1, a.line2].filter(Boolean).join(', ');
+  const city = [a.postal_code, a.city].filter(Boolean).join(' ') + (a.country ? ', ' + (t.country[a.country] || a.country) : '');
+  return [o.name, street, city].filter(Boolean).map(esc).join('<br>');
+}
 
 function customerMail(o) {
   const t = L[o.lang] || L.en;
-  const a = (path, text, color) => `<a href="${SITE}/${path}${t.sfx}.html" style="color:${color}">${text}</a>`;
   const g = '#4c5a52';
+  const h2 = (x) => `<h2 style="margin:26px 0 6px;font-size:17px">${x}</h2>`;
+  const first = String(o.name || '').trim().split(/\s+/)[0] || '';
+  const link = (path, text) => `<a href="${SITE}/${path}${t.sfx}.html" style="color:${g}">${text}</a>`;
   return shell(`<h1 style="margin:0 0 14px;font-size:24px">${t.thanks}</h1>
-<p style="margin:0 0 18px">${t.hello(esc(o.name), esc(o.ref))}</p>
+<p style="margin:0 0 18px">${t.hello(esc(first))}<br>${t.received(esc(o.ref))}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o, t)}</table>
-<h2 style="margin:24px 0 6px;font-size:17px">${t.hDelivery}</h2>
-<p style="margin:0 0 6px">${t.deliveryText}</p>
-${o.parcel ? `<p style="margin:0 0 6px">${t.parcel}: <strong>${esc(o.parcel)}</strong> · <a href="${esc(DPD.trackingUrl(o.parcel))}" style="color:#0e2219">${t.track}</a></p>` : ''}
-<p style="margin:0 0 18px">${o.addressLines.map(esc).join('<br>')}${o.note ? `<br>${t.note}: ${esc(o.note)}` : ''}</p>
-<h2 style="margin:0 0 6px;font-size:17px">${t.hArrives}</h2>
-<p style="margin:0 0 18px">${t.arrives}</p>
-<p style="margin:0 0 18px">${t.questions(`<a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>`)}</p>
-<p style="margin:0;font-size:13px;color:${g}">${t.legal((x) => a('withdraw', x, g), (x) => a('terms', x, g), (x) => a('privacy', x, g))}</p>`);
+${h2(t.hDelivery)}
+<p style="margin:0 0 10px">${t.deliveryText}</p>
+${o.parcel ? `<p style="margin:0 0 14px">${t.parcel} – <strong>${esc(o.parcel)}</strong></p>
+<p style="margin:0 0 6px"><a href="${esc(DPD.trackingUrl(o.parcel))}" style="display:inline-block;background:#0e2219;color:#f1eee4;text-decoration:none;padding:11px 20px;font-size:14px;font-weight:bold">${t.track}</a></p>` : ''}
+${h2(t.hAddress)}
+<p style="margin:0">${addressBlock(o, t)}</p>
+${o.note ? `<p style="margin:8px 0 0">${t.note} – ${esc(o.note)}</p>` : ''}
+${h2(t.hStorage)}
+<p style="margin:0">${t.storage}</p>
+${h2(t.hQuestions)}
+<p style="margin:0 0 10px">${t.questions(`<a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>`)}</p>
+<p style="margin:0 0 14px">${t.returns}</p>
+<p style="margin:0 0 22px;font-size:13px;color:${g}">${link('withdraw', t.links[0])} · ${link('terms', t.links[1])} · ${link('privacy', t.links[2])}</p>
+<p style="margin:0">${t.bye}<br>${t.team}</p>`);
 }
 
 function dpdBanner(o) {
