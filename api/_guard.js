@@ -52,8 +52,9 @@ const ADMIN_WINDOW = 15 * 60;
 async function adminLocked(req) {
   if (!token()) return false;
   try {
-    if ((await recent('admin-fail', visitor(req), ADMIN_WINDOW)) >= 5) return true;
-    if ((await recent('admin-fail', '', ADMIN_WINDOW)) >= 30) return true;
+    const mine = await recent('admin-fail', visitor(req), ADMIN_WINDOW);
+    const all = await recent('admin-fail', '', ADMIN_WINDOW);
+    if (mine >= 5 || all >= 30) { console.warn('admin locked', { mine, all }); return true; }
     return false;
   } catch (e) { console.error('guard skipped', e.message); return false; }
 }
