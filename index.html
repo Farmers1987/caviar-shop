@@ -463,7 +463,9 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
   }
   document.querySelectorAll('.lang button').forEach(function (b) {
     b.addEventListener('click', function () {
+      var from = LANG;
       LANG = b.getAttribute('data-lang');
+      if (from !== LANG) { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: 'language_switch', language: LANG, previous_language: from }); }
       try { localStorage.setItem('fc-lang', LANG); } catch (e) {}
       var u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
       relabel(); applyStatic(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart();
