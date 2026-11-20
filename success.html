@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thank you – Farmers &amp; Company</title>
 <meta name="robots" content="noindex">
+<script src="/consent.js" defer></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500&family=Inter:wght@400;600&display=swap">
 <style>
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0E2219;color:#F1EEE4;font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.55}
@@ -24,9 +25,24 @@ a:focus-visible{outline:2px solid #8FD3A8;outline-offset:3px}
 <p data-t="p2">Questions? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.</p>
 <p style="font-size:14px" data-t="p3">Read our <a href="/terms.html">terms of sale</a> and <a href="/privacy.html">privacy policy</a>.</p>
 <a class="btn" href="/" data-t="btn">Back to the shop</a>
+<a href="#" data-cookie-settings data-t="ck" style="font-size:13px;color:#B3BDB0">Cookie settings</a>
 </main>
 <script>
 try { localStorage.removeItem('fc-caviar-cart'); } catch (e) {}
+// Report the purchase to Analytics once (only sent on if the visitor accepted cookies).
+(function () {
+  var m = location.search.match(/[?&]session_id=(cs_(?:test|live)_[A-Za-z0-9]+)/);
+  if (!m) return;
+  var done = {}; try { done = JSON.parse(localStorage.getItem('fc-tracked') || '{}'); } catch (e) {}
+  if (done[m[1]]) return;
+  fetch('/api/order-summary?session_id=' + m[1]).then(function (r) { return r.ok ? r.json() : null; }).then(function (o) {
+    if (!o) return;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ ecommerce: null });
+    window.dataLayer.push({ event: 'purchase', ecommerce: o });
+    done[m[1]] = 1; try { localStorage.setItem('fc-tracked', JSON.stringify(done)); } catch (e) {}
+  }).catch(function () {});
+})();
 (function () {
   var lt = /[?&]lang=lt\b/.test(location.search);
   if (!lt) return;
@@ -35,7 +51,8 @@ try { localStorage.removeItem('fc-caviar-cart'); } catch (e) {}
     p1: 'Jūsų mokėjimas gautas, o kvitas jau keliauja į jūsų el. paštą. Ikrus atvėsintus pristatysime per 3 darbo dienas.',
     p2: 'Turite klausimų? Rašykite mums adresu <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
     p3: 'Susipažinkite su mūsų <a href="/terms-lt.html">pardavimo taisyklėmis</a> ir <a href="/privacy-lt.html">privatumo politika</a>.',
-    btn: 'Grįžti į parduotuvę'
+    btn: 'Grįžti į parduotuvę',
+    ck: 'Slapukų nustatymai'
   };
   document.documentElement.lang = 'lt'; document.title = 'Ačiū – Farmers & Company';
   document.querySelectorAll('[data-t]').forEach(function (n) { n.innerHTML = T[n.getAttribute('data-t')]; });

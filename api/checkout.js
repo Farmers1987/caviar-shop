@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
 
   params.append('mode', 'payment');
   // Payment methods are chosen in the Stripe Dashboard (Settings > Payment methods), not here.
-  params.append('success_url', `${origin}/success.html${lang === 'lt' ? '?lang=lt' : ''}`);
+  params.append('success_url', `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}${lang === 'lt' ? '&lang=lt' : ''}`);
   params.append('cancel_url', `${origin}/${lang === 'lt' ? '?lang=lt' : ''}#order`);
   params.append('shipping_address_collection[allowed_countries][0]', 'LT');
   params.append('phone_number_collection[enabled]', 'true');

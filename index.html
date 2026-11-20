@@ -6,6 +6,7 @@
 <title>Caviar – Farmers &amp; Company</title>
 <meta name="description" content="Antonius sturgeon caviar, delivered chilled across Lithuania by Farmers &amp; Company.">
 <meta name="robots" content="noindex">
+<script src="/consent.js" defer></script>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -279,6 +280,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <a href="/terms.html" data-t="foot.terms" data-page="terms">Terms of sale</a>
 <a href="/privacy.html" data-t="foot.privacy" data-page="privacy">Privacy policy</a>
 <a href="/withdraw.html" data-t="foot.withdraw" data-page="withdraw">Withdraw from contract here</a>
+<a href="#" data-cookie-settings data-t="foot.cookies">Cookie settings</a>
 </div>
 </div>
 </footer>
@@ -352,7 +354,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       'order.p2': 'Caviar is a perishable food, so it cannot be returned once delivered, unless it is faulty. The spoon and tin opener can be returned within 14 days. By paying you accept our <a href="{terms}">terms of sale</a>; read how we handle your data in our <a href="{privacy}">privacy policy</a>.',
       'foot.sold': 'Antonius Caviar is sold in Lithuania by Farmers and Company, UAB, J. Basanavičiaus g. 26, Vilnius. Company code 306143862, VAT code LT100015490611.',
       'foot.contact': 'Contact', 'foot.q': 'Questions about your order? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
-      'foot.info': 'Information', 'foot.delivery': 'Delivery', 'foot.terms': 'Terms of sale', 'foot.privacy': 'Privacy policy', 'foot.withdraw': 'Withdraw from contract here',
+      'foot.info': 'Information', 'foot.delivery': 'Delivery', 'foot.terms': 'Terms of sale', 'foot.privacy': 'Privacy policy', 'foot.withdraw': 'Withdraw from contract here', 'foot.cookies': 'Cookie settings',
       'bar.go': 'Go to your order',
       'added': function (l) { return l + ' added.'; }, 'addedBtn': 'Added ✓', 'add': 'Add to order', 'soldOut': 'Sold out',
       'items': function (n) { return n + (n === 1 ? ' item' : ' items') + ' in your order'; },
@@ -401,7 +403,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       'order.p2': 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Šaukštelį ir skardinės atidarytuvą galima grąžinti per 14 dienų. Apmokėdami sutinkate su mūsų <a href="{terms}">pardavimo taisyklėmis</a>; kaip tvarkome jūsų duomenis, rasite <a href="{privacy}">privatumo politikoje</a>.',
       'foot.sold': 'Antonius Caviar Lietuvoje parduoda Farmers and Company, UAB, J. Basanavičiaus g. 26, Vilnius. Įmonės kodas 306143862, PVM mokėtojo kodas LT100015490611.',
       'foot.contact': 'Kontaktai', 'foot.q': 'Turite klausimų dėl užsakymo? Rašykite mums adresu <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
-      'foot.info': 'Informacija', 'foot.delivery': 'Pristatymas', 'foot.terms': 'Pardavimo taisyklės', 'foot.privacy': 'Privatumo politika', 'foot.withdraw': 'Atsisakyti sutarties čia',
+      'foot.info': 'Informacija', 'foot.delivery': 'Pristatymas', 'foot.terms': 'Pardavimo taisyklės', 'foot.privacy': 'Privatumo politika', 'foot.withdraw': 'Atsisakyti sutarties čia', 'foot.cookies': 'Slapukų nustatymai',
       'bar.go': 'Į užsakymą',
       'added': function (l) { return l + ' – įdėta į užsakymą.'; }, 'addedBtn': 'Įdėta ✓', 'add': 'Į užsakymą', 'soldOut': 'Išparduota',
       'items': function (n) { var w = (n % 10 === 1 && n % 100 !== 11) ? 'prekė' : (n % 10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19)) ? 'prekės' : 'prekių'; return 'Užsakyme ' + n + ' ' + w; },
@@ -463,6 +465,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       try { localStorage.setItem('fc-lang', LANG); } catch (e) {}
       var u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
       relabel(); applyStatic(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart();
+      if (window.fcConsent) window.fcConsent.relabel();
     });
   });
 
@@ -483,6 +486,13 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     var saved = JSON.parse(localStorage.getItem('fc-caviar-cart') || '{}');
     Object.keys(saved).forEach(function (k) { if (CATALOG[k] && saved[k] > 0) cart[k] = Math.min(20, Math.floor(saved[k])); });
   } catch (e) {}
+  // Analytics events (GA4 e-commerce format). They only leave the browser if the visitor accepted cookies.
+  function gaItem(k, q) { return { item_id: k, item_name: k.indexOf('-') > 0 ? 'Antonius Caviar ' + CATALOG[k].label : CATALOG[k].label, price: CATALOG[k].price, quantity: q }; }
+  function track(name, value, items) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ ecommerce: null });
+    window.dataLayer.push({ event: name, language: LANG, ecommerce: { currency: 'EUR', value: Math.round(value * 100) / 100, items: items } });
+  }
   function save() { try { localStorage.setItem('fc-caviar-cart', JSON.stringify(cart)); } catch (e) {} }
   function money(v) { return v.toFixed(2).replace('.', ',') + ' €'; }
   function el(tag, attrs, kids) {
@@ -501,6 +511,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     if ((cart[key] || 0) >= m) { capped[key] = true; renderCart(); return; }
     cart[key] = Math.min(m, (cart[key] || 0) + 1); errorText = ''; save();
     lastAdded = t('added')(CATALOG[key].label);
+    track('add_to_cart', CATALOG[key].price, [gaItem(key, 1)]);
     renderCart();
     if (btn) {
       if (window.__fly) window.__fly(btn);
@@ -645,6 +656,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     if (busy) return;
     busy = true; errorText = ''; renderCart();
     var items = Object.keys(cart).map(function (k) { return { id: k, qty: cart[k] }; });
+    track('begin_checkout', items.reduce(function (s, i) { return s + CATALOG[i.id].price * i.qty; }, 0), items.map(function (i) { return gaItem(i.id, i.qty); }));
     fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: items, lang: LANG }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (res) {
