@@ -8,6 +8,8 @@
 
 const DPD = require('./_dpd.js');
 const LOGO = require('./_logo.js');
+// Public address of the shop, used for links in the mails. Change when the domain moves.
+const SITE = (process.env.SITE_URL || 'https://caviar-shop.vercel.app').replace(/\/$/, '');
 
 const FROM = process.env.ORDER_FROM || 'Farmers & Company <hello@farmersandcompany.lt>';
 // hello@ only sends; replies and customer questions go to Steffen.
@@ -82,7 +84,8 @@ ${o.parcel ? `<p style="margin:0 0 6px">DPD parcel number: <strong>${esc(o.parce
 <p style="margin:0 0 18px">${o.addressLines.map(esc).join('<br>')}${o.note ? `<br>Note for the courier: ${esc(o.note)}` : ''}</p>
 <h2 style="margin:0 0 6px;font-size:17px">When it arrives</h2>
 <p style="margin:0 0 18px">Put the tins in the fridge straight away, at −3 to +2 °C. Never freeze caviar. Once a tin is opened, enjoy it within 48 hours.</p>
-<p style="margin:0">Questions about your order? Reply to this email or write to <a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>.</p>`);
+<p style="margin:0 0 18px">Questions about your order? Reply to this email or write to <a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>.</p>
+<p style="margin:0;font-size:13px;color:#4c5a52">Caviar cannot be returned unless it is faulty. The spoon and tin opener can be returned within 14 days: <a href="${SITE}/withdraw.html" style="color:#4c5a52">withdraw from contract here</a>. Read our <a href="${SITE}/terms.html" style="color:#4c5a52">terms of sale</a> and <a href="${SITE}/privacy.html" style="color:#4c5a52">privacy policy</a>.</p>`);
 }
 
 function dpdBanner(o) {

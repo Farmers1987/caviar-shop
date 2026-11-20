@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
   params.append('custom_fields[0][optional]', 'true');
   params.append('custom_fields[0][text][maximum_length]', '35');
   // Shown right above the Pay button.
-  params.append('custom_text[submit][message]', 'If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.');
+  params.append('custom_text[submit][message]', 'Caviar is a perishable food and cannot be returned once delivered, unless it is faulty. If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.');
   params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
   params.append('shipping_options[0][shipping_rate_data][display_name]', 'Chilled delivery in Lithuania, within 3 working days');
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(fee));
