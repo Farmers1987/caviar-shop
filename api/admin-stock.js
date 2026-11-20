@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
       let body = req.body;
       if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
       if (!body || typeof body.counts !== 'object') return res.status(400).json({ error: 'invalid' });
-      await stock.saveSnapshot(body.counts, 'admin');
+      await stock.saveSnapshot(body.counts, 'admin', body.batches);
     } else if (req.method !== 'GET') {
       res.setHeader('Allow', 'GET, POST'); return res.status(405).json({ error: 'method' });
     }
@@ -40,6 +40,7 @@ module.exports = async (req, res) => {
       id: k, name: CATALOG[k].name,
       available: av ? av.available[k] : null,
       soldSince: av ? av.taken[k] || 0 : 0,
+      batches: av && av.batches[k] ? stock.remainingBatches(av.batches[k], av.taken[k]) : [],
     }));
     return res.status(200).json({ on: !!av, setAt: av ? av.setAt : null, products });
   } catch (e) {

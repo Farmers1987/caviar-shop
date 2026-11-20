@@ -8,13 +8,29 @@
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="/legal.css">
 <style>
-table{width:100%;border-collapse:collapse;margin-top:16px}
-th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;color:var(--soft);font-size:15px}
-th{color:var(--text);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
-td input{width:96px}
-td.n{text-align:right}
+main{max-width:820px}
+.card{border:1px solid var(--line);background:var(--band);padding:18px 20px;margin-top:16px}
+.card h2{margin:0;font-size:18px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sold{font-size:13px;color:var(--muted)}
+.count{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.count label{margin:0}
+.count input{width:110px}
+.count .sum{font-size:22px;font-weight:600;color:var(--text)}
+.batch{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:10px;align-items:center;margin-top:10px}
+.batch input{padding:10px 12px}
+.batch .x{background:none;border:1px solid var(--line);color:var(--soft);cursor:pointer;padding:10px 12px;font:inherit}
+.bstate{grid-column:1/-1;font-size:13px;margin-top:-4px;color:var(--muted)}
+.add{background:none;border:1px dashed #4C6A59;color:var(--soft);cursor:pointer;padding:10px 14px;margin-top:12px;font:inherit;font-size:14px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:10px;margin-top:14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cols span:last-child{width:44px}
+.cols[hidden]{display:none}
 .out{color:#F3B6A8;font-weight:600}
 .low{color:#f6e7b0;font-weight:600}
+.soon{border-left:3px solid #f6e7b0;padding:10px 14px;background:var(--band);margin-top:16px}
+.soon.bad{border-color:#F3B6A8}
+.soon ul{margin:6px 0 0;padding-left:18px}
+@media (max-width:520px){.batch,.cols{grid-template-columns:minmax(0,1fr) 84px auto}.batch input[type=number]{width:84px}}
 </style>
 </head>
 <body>
@@ -27,12 +43,10 @@ td.n{text-align:right}
 </div>
 <div id="app" hidden>
 <h1>Lager</h1>
-<p>Skriv, hvor mange af hver vare der kan <strong>sælges nu</strong>, altså på hylden og ikke allerede solgt. Siden trækker selv fra, når kunder betaler. Når der kommer nye dåser, lægger du dem oven i tallet og gemmer.</p>
+<p>Skriv, hvor mange af hver vare der kan <strong>sælges nu</strong>. Tilføj gerne holdbarhedsdatoer: så bliver antallet summen af datoerne, og siden trækker solgte dåser fra den ældste dato først.</p>
 <p class="hint" id="setAt"></p>
-<table>
-<thead><tr><th>Vare</th><th>Til salg nu</th><th class="n">Solgt siden sidste opdatering</th></tr></thead>
-<tbody id="rows"></tbody>
-</table>
+<div id="soon"></div>
+<div id="cards"></div>
 <button class="btn" id="save" type="button">Gem lager</button>
 </div>
 <div id="msg" role="status" aria-live="polite" style="margin-top:16px"></div>
@@ -42,6 +56,7 @@ td.n{text-align:right}
   var pw = '';
   try { pw = sessionStorage.getItem('fc-admin') || ''; } catch (e) {}
   var msg = document.getElementById('msg');
+  var SOON_DAYS = 30;
   function say(t, bad) { msg.innerHTML = t ? '<p class="note"' + (bad ? ' style="border-color:#F3B6A8"' : '') + '>' + t + '</p>' : ''; }
   var ERR = { wrong_password: 'Forkert adgangskode.', locked: 'For mange forkerte forsøg. Prøv igen om 15 minutter.', no_password: 'Log ind er ikke slået til endnu.', no_storage: 'Noget gik galt. Prøv igen.', failed: 'Noget gik galt. Prøv igen.' };
   async function call(method, body) {
@@ -50,23 +65,78 @@ td.n{text-align:right}
     if (!r.ok) throw new Error(d.error || 'failed');
     return d;
   }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function daysTo(date) {
+    var t = new Date(); var today = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+    return Math.round((Date.parse(date + 'T00:00:00Z') - today) / 86400000);
+  }
+  function fmt(date) { return new Date(date + 'T00:00:00Z').toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }); }
+  function when(d) { return d < 0 ? 'udløbet for ' + (-d) + ' dag' + (d === -1 ? '' : 'e') + ' siden' : d === 0 ? 'udløber i dag' : 'udløber om ' + d + ' dag' + (d === 1 ? '' : 'e'); }
+
+  function batchRow(card, b) {
+    var row = el('div', 'batch');
+    var date = el('input'); date.type = 'date'; date.value = b ? b.date : ''; date.setAttribute('aria-label', 'Holdbar til');
+    var qty = el('input'); qty.type = 'number'; qty.min = '1'; qty.step = '1'; qty.inputMode = 'numeric'; qty.value = b ? b.qty : ''; qty.setAttribute('aria-label', 'Antal med denne dato');
+    var x = el('button', 'x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Fjern dato');
+    var state = el('div', 'bstate');
+    function upd() {
+      if (!date.value) { state.textContent = ''; state.className = 'bstate'; return; }
+      var d = daysTo(date.value);
+      state.textContent = when(d);
+      state.className = 'bstate' + (d < 0 ? ' out' : d <= SOON_DAYS ? ' low' : '');
+    }
+    date.addEventListener('input', function () { upd(); refresh(card); });
+    qty.addEventListener('input', function () { refresh(card); });
+    x.addEventListener('click', function () { row.remove(); refresh(card); });
+    row.append(date, qty, x, state); upd();
+    card.querySelector('.list').appendChild(row);
+  }
+  // With dates, the number for sale is their sum; without, it is typed in.
+  function refresh(card) {
+    var rows = card.querySelectorAll('.batch');
+    var input = card.querySelector('.count input'), sum = card.querySelector('.count .sum');
+    card.querySelector('.cols').hidden = !rows.length;
+    if (!rows.length) { input.hidden = false; sum.hidden = true; return; }
+    var t = 0; rows.forEach(function (r) { var n = Number(r.querySelectorAll('input')[1].value); if (Number.isInteger(n) && n > 0) t += n; });
+    input.hidden = true; sum.hidden = false; sum.textContent = t;
+  }
+  function soonBox(products) {
+    var box = document.getElementById('soon'); box.textContent = '';
+    var hits = [];
+    products.forEach(function (p) { (p.batches || []).forEach(function (b) { if (b.qty > 0) { var d = daysTo(b.date); if (d <= SOON_DAYS) hits.push({ p: p.name, b: b, d: d }); } }); });
+    if (!hits.length) return;
+    hits.sort(function (a, b) { return a.d - b.d; });
+    var w = el('div', 'soon' + (hits[0].d < 0 ? ' bad' : ''));
+    w.appendChild(el('strong', null, 'Holdbarhed inden for ' + SOON_DAYS + ' dage'));
+    var ul = el('ul');
+    hits.forEach(function (h) { ul.appendChild(el('li', h.d < 0 ? 'out' : null, h.p + ': ' + h.b.qty + ' stk., ' + fmt(h.b.date) + ' (' + when(h.d) + ')')); });
+    w.appendChild(ul); box.appendChild(w);
+  }
   function show(d) {
     document.getElementById('login').hidden = true;
     document.getElementById('app').hidden = false;
     document.getElementById('setAt').textContent = d.on
       ? 'Sidst opdateret ' + new Date(d.setAt * 1000).toLocaleString('da-DK') + '. Tallene herunder er det, der kan sælges lige nu.'
       : 'Lageret er ikke sat endnu, så siden viser alt som på lager. Skriv tallene og gem for at slå lagerstyring til.';
-    var tb = document.getElementById('rows'); tb.textContent = '';
+    soonBox(d.products);
+    var wrap = document.getElementById('cards'); wrap.textContent = '';
     d.products.forEach(function (p) {
-      var tr = document.createElement('tr');
-      var n = p.available == null ? '' : Math.max(0, p.available);
+      var card = el('section', 'card'); card.dataset.id = p.id;
+      var top = el('div', 'top');
       var cls = p.available == null ? '' : p.available <= 0 ? 'out' : p.available <= 3 ? 'low' : '';
-      tr.innerHTML = '<td></td><td><input type="number" min="0" step="1" inputmode="numeric"></td><td class="n"></td>';
-      tr.children[0].textContent = p.name;
-      if (cls) tr.children[0].className = cls;
-      var inp = tr.querySelector('input'); inp.value = n; inp.dataset.id = p.id; inp.setAttribute('aria-label', 'Til salg nu: ' + p.name);
-      tr.children[2].textContent = d.on ? String(p.soldSince) : '–';
-      tb.appendChild(tr);
+      top.append(el('h2', cls, p.name), el('span', 'sold', d.on ? 'Solgt siden sidste opdatering: ' + p.soldSince : ''));
+      var count = el('div', 'count');
+      var lab = el('label', null, 'Til salg nu'); var inp = el('input'); inp.type = 'number'; inp.min = '0'; inp.step = '1'; inp.inputMode = 'numeric';
+      inp.id = 'n-' + p.id; lab.htmlFor = inp.id; inp.value = p.available == null ? '' : Math.max(0, p.available);
+      count.append(lab, inp, el('span', 'sum'));
+      var cols = el('div', 'cols'); cols.append(el('span', null, 'Holdbar til'), el('span', null, 'Antal'), el('span'));
+      var list = el('div', 'list');
+      var add = el('button', 'add', '+ Tilføj holdbarhedsdato'); add.type = 'button';
+      add.addEventListener('click', function () { batchRow(card); refresh(card); card.querySelector('.list .batch:last-child input').focus(); });
+      card.append(top, count, cols, list, add);
+      wrap.appendChild(card);
+      (p.batches || []).forEach(function (b) { if (b.qty > 0) batchRow(card, b); });
+      refresh(card);
     });
   }
   async function load() {
@@ -80,14 +150,28 @@ td.n{text-align:right}
   });
   document.getElementById('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('go').click(); });
   document.getElementById('save').addEventListener('click', async function () {
-    var counts = {}, bad = false;
-    document.querySelectorAll('#rows input').forEach(function (i) {
-      var v = i.value.trim(); var n = Number(v);
-      if (v === '' || !Number.isInteger(n) || n < 0) bad = true; counts[i.dataset.id] = n;
+    var counts = {}, batches = {}, bad = '';
+    document.querySelectorAll('#cards .card').forEach(function (card) {
+      var id = card.dataset.id, rows = card.querySelectorAll('.batch');
+      if (rows.length) {
+        batches[id] = [];
+        rows.forEach(function (r) {
+          var i = r.querySelectorAll('input'), date = i[0].value, n = Number(i[1].value);
+          if (!date && !i[1].value) return; // empty row: ignore
+          if (!date) bad = 'Vælg en dato ud for hvert antal.';
+          else if (!Number.isInteger(n) || n < 1) bad = 'Skriv et helt antal (1 eller mere) ud for hver dato.';
+          else batches[id].push({ date: date, qty: n });
+        });
+        counts[id] = batches[id].reduce(function (a, b) { return a + b.qty; }, 0);
+      } else {
+        var v = card.querySelector('.count input').value.trim(), n = Number(v);
+        if (v === '' || !Number.isInteger(n) || n < 0) bad = 'Skriv et helt tal (0 eller mere) ud for hver vare.';
+        counts[id] = n;
+      }
     });
-    if (bad) { say('Skriv et helt tal (0 eller mere) ud for hver vare.', true); return; }
+    if (bad) { say(bad, true); return; }
     this.disabled = true;
-    try { show(await call('POST', { counts: counts })); say('Lageret er gemt.'); }
+    try { show(await call('POST', { counts: counts, batches: batches })); say('Lageret er gemt.'); }
     catch (e) { say(ERR[e.message] || ERR.failed, true); }
     this.disabled = false;
   });

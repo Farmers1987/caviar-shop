@@ -28,13 +28,44 @@ async function readSnapshot() {
   return s && s.counts && s.setAt ? s : null;
 }
 
-async function saveSnapshot(counts, by) {
+// Best-before dates: per product a list of { date: 'YYYY-MM-DD', qty }. Only used on the admin page.
+function cleanBatches(batches) {
+  const out = {};
+  for (const k of Object.keys(CATALOG)) {
+    const list = batches && Array.isArray(batches[k]) ? batches[k] : [];
+    const merged = {};
+    for (const b of list.slice(0, 50)) {
+      const date = String((b && b.date) || '');
+      const qty = Number(b && b.qty);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date + 'T00:00:00Z'))) continue;
+      if (!Number.isInteger(qty) || qty < 1 || qty > 100000) continue;
+      merged[date] = (merged[date] || 0) + qty;
+    }
+    const dates = Object.keys(merged).sort();
+    if (dates.length) out[k] = dates.map((d) => ({ date: d, qty: merged[d] }));
+  }
+  return out;
+}
+
+// What is left of each date after the sales since the snapshot, oldest date sold first.
+function remainingBatches(list, sold) {
+  let left = Math.max(0, sold || 0);
+  return (list || []).map((b) => {
+    const take = Math.min(b.qty, left); left -= take;
+    return { date: b.date, qty: b.qty - take };
+  });
+}
+
+async function saveSnapshot(counts, by, batches) {
   const clean = {};
   for (const k of Object.keys(CATALOG)) {
     const n = Number(counts[k]);
     clean[k] = Number.isInteger(n) && n >= 0 && n <= 100000 ? n : 0;
   }
-  const snap = { counts: clean, setAt: Math.floor(Date.now() / 1000), by: String(by || '').slice(0, 60) };
+  const bb = cleanBatches(batches);
+  // A product with dates: the number for sale is the sum of its dates.
+  for (const k of Object.keys(bb)) clean[k] = bb[k].reduce((a, b) => a + b.qty, 0);
+  const snap = { counts: clean, batches: bb, setAt: Math.floor(Date.now() / 1000), by: String(by || '').slice(0, 60) };
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   // Each save is a new file (unique address, so nothing is served from an old cache).
   await blob().put(PREFIX + 'snapshot-' + snap.setAt + '.json', JSON.stringify(snap), {
@@ -93,7 +124,7 @@ async function availability(stripeKey, opts) {
   const taken = await takenSince(snap.setAt, stripeKey, opts.excludeId);
   const available = {};
   for (const k of Object.keys(CATALOG)) available[k] = (snap.counts[k] || 0) - (taken[k] || 0);
-  const data = { available, setAt: snap.setAt, counts: snap.counts, taken };
+  const data = { available, setAt: snap.setAt, counts: snap.counts, taken, batches: snap.batches || {} };
   if (!opts.excludeId) cache = { at: Date.now(), data };
   return data;
 }
@@ -109,4 +140,4 @@ function publicView(av) {
   return out;
 }
 
-module.exports = { enabled, readSnapshot, saveSnapshot, availability, publicView, encodeItems, decodeItems, MAX_PER_LINE };
+module.exports = { remainingBatches, enabled, readSnapshot, saveSnapshot, availability, publicView, encodeItems, decodeItems, MAX_PER_LINE };
