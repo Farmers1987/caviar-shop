@@ -6,7 +6,7 @@ const stock = require('./_stock.js');
 function allowed(req) {
   const want = process.env.ADMIN_PASSWORD || '';
   const got = String(req.headers['x-admin-password'] || '');
-  if (want.length < 8 || !got) return false;
+  if (want.length < 12 || !got) return false;
   const a = crypto.createHash('sha256').update(want).digest();
   const b = crypto.createHash('sha256').update(got).digest();
   return crypto.timingSafeEqual(a, b);
@@ -14,6 +14,7 @@ function allowed(req) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex');
   if (!process.env.ADMIN_PASSWORD) return res.status(503).json({ error: 'no_password' });
   if (!stock.enabled()) return res.status(503).json({ error: 'no_storage' });
   if (!allowed(req)) { await new Promise((r) => setTimeout(r, 600)); return res.status(401).json({ error: 'wrong_password' }); }
