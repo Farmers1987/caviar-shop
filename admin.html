@@ -43,7 +43,7 @@ td.n{text-align:right}
   try { pw = sessionStorage.getItem('fc-admin') || ''; } catch (e) {}
   var msg = document.getElementById('msg');
   function say(t, bad) { msg.innerHTML = t ? '<p class="note"' + (bad ? ' style="border-color:#F3B6A8"' : '') + '>' + t + '</p>' : ''; }
-  var ERR = { wrong_password: 'Forkert adgangskode.', no_password: 'Log ind er ikke slået til endnu.', no_storage: 'Noget gik galt. Prøv igen.', failed: 'Noget gik galt. Prøv igen.' };
+  var ERR = { wrong_password: 'Forkert adgangskode.', locked: 'For mange forkerte forsøg. Prøv igen om 15 minutter.', no_password: 'Log ind er ikke slået til endnu.', no_storage: 'Noget gik galt. Prøv igen.', failed: 'Noget gik galt. Prøv igen.' };
   async function call(method, body) {
     var r = await fetch('/api/admin-stock', { method: method, headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw }, body: body ? JSON.stringify(body) : undefined });
     var d = await r.json().catch(function () { return {}; });

@@ -1,5 +1,6 @@
 // Online withdrawal form (spoon and tin opener). Sends the statement to us and an
 // acknowledgement with date and time to the customer, as consumer law requires.
+const guard = require('./_guard.js');
 const FROM = process.env.ORDER_FROM || 'Farmers & Company <hello@farmersandcompany.lt>';
 const TO = process.env.ORDER_NOTIFY_TO || 'sp@farmersandcompany.lt';
 
@@ -21,6 +22,7 @@ module.exports = async (req, res) => {
   if (!key) return res.status(503).json({ error: 'not_configured' });
   const b = req.body || {};
   if (b.website) return res.status(200).json({ ok: true }); // bots fill the hidden field
+  if (await guard.over(req, 'withdraw', { limit: 3, windowSec: 3600 })) return res.status(429).json({ error: 'too_many' });
   const f = { name: clip(b.name, 100), email: clip(b.email, 200), ref: clip(b.ref, 40), items: clip(b.items, 500) };
   if (!f.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) || !f.ref || !f.items) return res.status(400).json({ error: 'invalid' });
 

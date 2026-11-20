@@ -1,5 +1,6 @@
 const { CATALOG, FREE_FROM_CENTS, shippingFeeCents, productName } = require('./_shared.js');
 const stock = require('./_stock.js');
+const guard = require('./_guard.js');
 
 // Texts on the Stripe payment page, per language.
 const TEXT = {
@@ -23,6 +24,8 @@ module.exports = async (req, res) => {
   }
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return res.status(503).json({ error: 'not_configured' });
+  // Open payments hold tins for 30 minutes, so limit how many one visitor can start.
+  if (await guard.over(req, 'checkout', { limit: 15, windowSec: 600 })) return res.status(429).json({ error: 'too_many' });
 
   let body = req.body;
   if (typeof body === 'string') {

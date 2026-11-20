@@ -2,6 +2,7 @@
 const crypto = require('crypto');
 const { CATALOG } = require('./_shared.js');
 const stock = require('./_stock.js');
+const guard = require('./_guard.js');
 
 function allowed(req) {
   const want = process.env.ADMIN_PASSWORD || '';
@@ -17,7 +18,12 @@ module.exports = async (req, res) => {
   res.setHeader('X-Robots-Tag', 'noindex');
   if (!process.env.ADMIN_PASSWORD) return res.status(503).json({ error: 'no_password' });
   if (!stock.enabled()) return res.status(503).json({ error: 'no_storage' });
-  if (!allowed(req)) { await new Promise((r) => setTimeout(r, 600)); return res.status(401).json({ error: 'wrong_password' }); }
+  if (await guard.adminLocked(req)) return res.status(429).json({ error: 'locked' });
+  if (!allowed(req)) {
+    await guard.adminFailed(req);
+    await new Promise((r) => setTimeout(r, 600));
+    return res.status(401).json({ error: 'wrong_password' });
+  }
   const key = process.env.STRIPE_SECRET_KEY;
   try {
     if (req.method === 'POST') {
