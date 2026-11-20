@@ -1,4 +1,19 @@
-const { CATALOG, FREE_FROM_CENTS, shippingFeeCents } = require('./_shared.js');
+const { CATALOG, FREE_FROM_CENTS, shippingFeeCents, productName } = require('./_shared.js');
+const stock = require('./_stock.js');
+
+// Texts on the Stripe payment page, per language.
+const TEXT = {
+  en: {
+    note: 'Note for the courier (door code, floor)',
+    submit: 'Caviar is a perishable food and cannot be returned once delivered, unless it is faulty. If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.',
+    shipping: 'Chilled delivery in Lithuania, within 3 working days',
+  },
+  lt: {
+    note: 'Žinutė kurjeriui (durų kodas, aukštas)',
+    submit: 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Jei parašysite žinutę kurjeriui, perduosime ją DPD tiksliai taip, kaip parašėte. Atidžiai patikrinkite durų kodus ir nurodymus – už pateiktą informaciją atsakote jūs.',
+    shipping: 'Atvėsintas pristatymas Lietuvoje per 3 darbo dienas',
+  },
+};
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -13,6 +28,8 @@ module.exports = async (req, res) => {
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (e) { body = null; }
   }
+  const lang = body && body.lang === 'lt' ? 'lt' : 'en';
+  const T = TEXT[lang];
   const items = body && Array.isArray(body.items) ? body.items : null;
   if (!items || items.length === 0 || items.length > 20) return res.status(400).json({ error: 'invalid_order' });
 
@@ -31,8 +48,28 @@ module.exports = async (req, res) => {
     params.append(`line_items[${i}][quantity]`, String(qty));
     params.append(`line_items[${i}][price_data][currency]`, 'eur');
     params.append(`line_items[${i}][price_data][unit_amount]`, String(product.cents));
-    params.append(`line_items[${i}][price_data][product_data][name]`, product.name);
+    params.append(`line_items[${i}][price_data][product_data][name]`, productName(id, lang));
   }
+
+  // Never sell more than is in stock. Open payments hold their tins until they expire (30 minutes).
+  try {
+    const av = await stock.availability(key, { fresh: true });
+    if (av) {
+      const short = {};
+      for (const it of items) {
+        const left = Math.max(0, av.available[String(it.id)]);
+        if (Number(it.qty) > left) short[String(it.id)] = left;
+      }
+      if (Object.keys(short).length) return res.status(409).json({ error: 'stock', available: short });
+    }
+  } catch (e) {
+    console.error('stock check failed', e.message);
+    return res.status(503).json({ error: 'stock_unavailable' });
+  }
+  params.append('metadata[items]', stock.encodeItems(items.map((it) => ({ id: String(it.id), qty: Number(it.qty) }))));
+  params.append('metadata[lang]', lang);
+  params.append('locale', lang);
+  params.append('expires_at', String(Math.floor(Date.now() / 1000) + 31 * 60));
 
   const fee = subtotal >= FREE_FROM_CENTS ? 0 : shippingFeeCents() || 0;
   const host = req.headers['x-forwarded-host'] || req.headers.host;
@@ -40,8 +77,8 @@ module.exports = async (req, res) => {
 
   params.append('mode', 'payment');
   // Payment methods are chosen in the Stripe Dashboard (Settings > Payment methods), not here.
-  params.append('success_url', `${origin}/success.html`);
-  params.append('cancel_url', `${origin}/#order`);
+  params.append('success_url', `${origin}/success.html${lang === 'lt' ? '?lang=lt' : ''}`);
+  params.append('cancel_url', `${origin}/${lang === 'lt' ? '?lang=lt' : ''}#order`);
   params.append('shipping_address_collection[allowed_countries][0]', 'LT');
   params.append('phone_number_collection[enabled]', 'true');
   params.append('adaptive_pricing[enabled]', 'false');
@@ -49,13 +86,13 @@ module.exports = async (req, res) => {
   params.append('custom_fields[0][key]', 'delivery_note');
   params.append('custom_fields[0][type]', 'text');
   params.append('custom_fields[0][label][type]', 'custom');
-  params.append('custom_fields[0][label][custom]', 'Note for the courier (door code, floor)');
+  params.append('custom_fields[0][label][custom]', T.note);
   params.append('custom_fields[0][optional]', 'true');
   params.append('custom_fields[0][text][maximum_length]', '35');
   // Shown right above the Pay button.
-  params.append('custom_text[submit][message]', 'Caviar is a perishable food and cannot be returned once delivered, unless it is faulty. If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.');
+  params.append('custom_text[submit][message]', T.submit);
   params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
-  params.append('shipping_options[0][shipping_rate_data][display_name]', 'Chilled delivery in Lithuania, within 3 working days');
+  params.append('shipping_options[0][shipping_rate_data][display_name]', T.shipping);
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(fee));
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'eur');
 

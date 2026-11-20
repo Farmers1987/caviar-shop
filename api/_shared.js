@@ -8,8 +8,8 @@ const CATALOG = {
   'osc5-50': { name: 'Antonius Caviar Oscietra 5*, 50 g', cents: 10000 },
   'osc6-30': { name: 'Antonius Caviar Oscietra 6*, 30 g', cents: 7950 },
   'osc6-50': { name: 'Antonius Caviar Oscietra 6*, 50 g', cents: 13250 },
-  spoon: { name: 'Mother-of-pearl caviar spoon', cents: 1500 },
-  opener: { name: 'Caviar tin opener', cents: 1500 },
+  spoon: { name: 'Mother-of-pearl caviar spoon', lt: 'Perlamutrinis ikrų šaukštelis', cents: 1500 },
+  opener: { name: 'Caviar tin opener', lt: 'Ikrų skardinės atidarytuvas', cents: 1500 },
 };
 
 const FREE_FROM_CENTS = 15000;
@@ -22,4 +22,7 @@ function shippingFeeCents() {
   return Number.isInteger(n) && n >= 0 && n <= 10000 ? n : null;
 }
 
-module.exports = { CATALOG, FREE_FROM_CENTS, shippingFeeCents };
+// Product name in the customer's language (caviar names are the same in both).
+function productName(id, lang) { const p = CATALOG[id]; return lang === 'lt' && p.lt ? p.lt : p.name; }
+
+module.exports = { productName, CATALOG, FREE_FROM_CENTS, shippingFeeCents };

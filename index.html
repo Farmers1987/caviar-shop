@@ -135,6 +135,17 @@ footer .wrap{padding-top:48px;padding-bottom:56px;display:flex;flex-wrap:wrap;ju
 footer .col{display:flex;flex-direction:column;gap:8px;flex:0 1 260px;min-width:0}
 footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;font-size:13px}
 .sr{position:absolute;left:-9999px}
+.right{display:flex;align-items:center;gap:14px}
+.lang{display:flex;border:1px solid var(--line2)}
+.lang button{background:transparent;color:var(--soft);border:0;min-width:44px;min-height:42px;font-size:13px;letter-spacing:.08em;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--text);color:var(--ground);font-weight:600}
+.stock{font-size:13px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;color:var(--soft)}
+.stock::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.stock.low::before{background:#E9C46A}.stock.low{color:#F1DFA8}
+.stock.out::before{background:#F3B6A8}.stock.out{color:#F3B6A8}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.qty button[disabled]{opacity:.35;cursor:not-allowed}
+.capnote{flex-basis:100%;font-size:13px;color:#F1DFA8}
 .btn.added{background:var(--text)}
 #cartBar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--text);color:var(--ground);box-shadow:0 -6px 24px rgba(0,0,0,.35);transform:translateY(110%);transition:transform .25s ease}
 #cartBar.show{transform:none}
@@ -152,32 +163,35 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <div class="wrap bar">
 <a href="#top"><img class="logo" src="/img/logo_light.png" alt="Farmers &amp; Company" style="height:64px;width:auto"></a>
 <nav aria-label="Main">
-<a href="#caviar">Caviar</a>
-<a href="#accessories">Accessories</a>
-<a href="#about">About</a>
-<a href="#delivery">Delivery</a>
+<a href="#caviar" data-t="nav.caviar">Caviar</a>
+<a href="#accessories" data-t="nav.acc">Accessories</a>
+<a href="#about" data-t="nav.about">About</a>
+<a href="#delivery" data-t="nav.delivery">Delivery</a>
 </nav>
-<a class="cartlink" href="#order">Your order · <span id="cartCount">0</span></a>
+<div class="right">
+<div class="lang" role="group" aria-label="Language / Kalba"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="lt" aria-pressed="false">LT</button></div>
+<a class="cartlink" href="#order"><span data-t="cartlink">Your order</span> · <span id="cartCount">0</span></a>
+</div>
 </div>
 </header>
 
 <main>
 <section id="top" class="wrap hero">
 <div class="copy">
-<p class="eyebrow">Antonius Caviar · Sturgeon caviar malossol</p>
-<h1 class="display">Caviar for the Christmas table, delivered to your door.</h1>
-<p style="font-size:18px;color:var(--soft);max-width:520px">Siberian and Oscietra in 30 g and 50 g tins. Delivered chilled, anywhere in Lithuania, within 3 working days.</p>
+<p data-t="hero.eyebrow" class="eyebrow">Antonius Caviar · Sturgeon caviar malossol</p>
+<h1 data-t="hero.h1" class="display">Caviar for the Christmas table, delivered to your door.</h1>
+<p data-t="hero.p" style="font-size:18px;color:var(--soft);max-width:520px">Siberian and Oscietra in 30 g and 50 g tins. Delivered chilled, anywhere in Lithuania, within 3 working days.</p>
 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px">
-<a class="btn shine" href="#caviar">Choose your caviar</a>
-<p class="small">We deliver in Lithuania only. Free delivery from 150 €.</p>
+<a data-t="hero.btn" class="btn shine" href="#caviar">Choose your caviar</a>
+<p data-t="hero.small" class="small">We deliver in Lithuania only. Free delivery from 150 €.</p>
 </div>
 <div class="xmas">
-<span class="display" style="font-size:22px;color:var(--accent);white-space:nowrap">Christmas</span>
-<p style="font-size:15px;color:var(--soft)">Order by Thursday 17 December for delivery before Christmas.</p>
+<span data-t="xmas.label" class="display" style="font-size:22px;color:var(--accent);white-space:nowrap">Christmas</span>
+<p data-t="xmas.p" style="font-size:15px;color:var(--soft)">Order by Thursday 17 December for delivery before Christmas.</p>
 </div>
 </div>
 <div class="tins">
-<div class="stage" role="img" aria-label="A tin of Antonius Oscietra caviar with the lid sliding off">
+<div class="stage" role="img" data-t-aria="hero.aria" aria-label="A tin of Antonius Oscietra caviar with the lid sliding off">
 <img class="tin" src="/img/oscietra_caviar_6.webp" alt="" width="1000" height="1000">
 <img class="lid" src="/img/oscietra_label_6.webp" alt="" width="1000" height="1000">
 </div>
@@ -187,9 +201,9 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <section id="caviar" class="band">
 <div class="wrap section">
 <div class="head">
-<p class="eyebrow">The selection</p>
-<h2 class="display">Four caviars, two sizes</h2>
-<p class="small" style="font-size:16px">All prices include VAT. Pick a size and add it to your order. Nutrition and ingredients are listed under each caviar.</p>
+<p data-t="sel.eyebrow" class="eyebrow">The selection</p>
+<h2 data-t="sel.h2" class="display">Four caviars, two sizes</h2>
+<p data-t="sel.p" class="small" style="font-size:16px">All prices include VAT. Pick a size and add it to your order. Nutrition and ingredients are listed under each caviar.</p>
 </div>
 <div class="grid" id="products"></div>
 </div>
@@ -197,8 +211,8 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 
 <section id="accessories" class="wrap section">
 <div class="head">
-<p class="eyebrow">To serve</p>
-<h2 class="display">Spoon and tin opener</h2>
+<p data-t="acc.eyebrow" class="eyebrow">To serve</p>
+<h2 data-t="acc.h2" class="display">Spoon and tin opener</h2>
 </div>
 <div class="grid" id="extras"></div>
 </section>
@@ -206,36 +220,36 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <section id="about" class="band">
 <div class="wrap section">
 <div class="head">
-<p class="eyebrow">About the caviar</p>
-<h2 class="display">Fresh, unpasteurised, from one family farm</h2>
+<p data-t="about.eyebrow" class="eyebrow">About the caviar</p>
+<h2 data-t="about.h2" class="display">Fresh, unpasteurised, from one family farm</h2>
 </div>
 <div class="three">
-<div><h3 class="display">Origin</h3><p>Antonius Caviar raises its sturgeon on its own family farms in Poland. The fish spend the last stage in artesian water, and every tin can be traced back to the individual fish.</p></div>
-<div><h3 class="display">How it is made</h3><p>Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.</p></div>
-<div><h3 class="display">How to serve</h3><p>Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.</p></div>
+<div><h3 class="display" data-t="about.o.h">Origin</h3><p data-t="about.o.p">Antonius Caviar raises its sturgeon on its own family farms in Poland. The fish spend the last stage in artesian water, and every tin can be traced back to the individual fish.</p></div>
+<div><h3 class="display" data-t="about.m.h">How it is made</h3><p data-t="about.m.p">Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.</p></div>
+<div><h3 class="display" data-t="about.s.h">How to serve</h3><p data-t="about.s.p">Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.</p></div>
 </div>
 </div>
 </section>
 
 <section id="delivery" class="wrap section">
 <div class="head">
-<p class="eyebrow">Delivery and care</p>
-<h2 class="display">From our cold room to your fridge</h2>
+<p data-t="del.eyebrow" class="eyebrow">Delivery and care</p>
+<h2 data-t="del.h2" class="display">From our cold room to your fridge</h2>
 </div>
 <div class="three">
-<div><h3 class="display">Within 3 working days</h3><p>We deliver chilled to any address in Lithuania within 3 working days of your order. We do not ship to other countries.</p></div>
-<div><h3 class="display">Free from 150 €</h3><p>Delivery is free on orders from 150 €. <span id="feeText"></span></p></div>
-<div><h3 class="display">Keep it cold</h3><p>Store unopened tins in the fridge at −3 to +2 °C. Never freeze caviar. Once opened, enjoy within 48 hours. The best-before date is printed on each tin.</p></div>
+<div><h3 class="display" data-t="del.1.h">Within 3 working days</h3><p data-t="del.1.p">We deliver chilled to any address in Lithuania within 3 working days of your order. We do not ship to other countries.</p></div>
+<div><h3 class="display" data-t="del.2.h">Free from 150 €</h3><p><span data-t="del.2.p">Delivery is free on orders from 150 €.</span> <span id="feeText"></span></p></div>
+<div><h3 class="display" data-t="del.3.h">Keep it cold</h3><p data-t="del.3.p">Store unopened tins in the fridge at −3 to +2 °C. Never freeze caviar. Once opened, enjoy within 48 hours. The best-before date is printed on each tin.</p></div>
 </div>
 </section>
 
 <section id="order" class="band">
 <div class="wrap order">
 <div class="intro">
-<p class="eyebrow">Your order</p>
-<h2 class="display" style="font-size:clamp(34px,4vw,48px)">Review and pay</h2>
-<p class="small" style="font-size:16px;max-width:420px">You enter your delivery address in Lithuania and pay by card on the next step. Payment is handled securely by Stripe.</p>
-<p class="small" style="font-size:14px;max-width:420px;margin-top:12px">Caviar is a perishable food, so it cannot be returned once delivered, unless it is faulty. The spoon and tin opener can be returned within 14 days. By paying you accept our <a href="/terms.html">terms of sale</a>; read how we handle your data in our <a href="/privacy.html">privacy policy</a>.</p>
+<p data-t="order.eyebrow" class="eyebrow">Your order</p>
+<h2 data-t="order.h2" class="display" style="font-size:clamp(34px,4vw,48px)">Review and pay</h2>
+<p data-t="order.p1" class="small" style="font-size:16px;max-width:420px">You enter your delivery address in Lithuania and pay by card on the next step. Payment is handled securely by Stripe.</p>
+<p class="small" data-t="order.p2" style="font-size:14px;max-width:420px;margin-top:12px">Caviar is a perishable food, so it cannot be returned once delivered, unless it is faulty. The spoon and tin opener can be returned within 14 days. By paying you accept our <a href="/terms.html">terms of sale</a>; read how we handle your data in our <a href="/privacy.html">privacy policy</a>.</p>
 </div>
 <div class="box" id="cartBox" aria-live="polite"></div>
 </div>
@@ -246,18 +260,18 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <div class="wrap">
 <div class="col" style="flex:1 1 260px;gap:14px">
 <img src="/img/logo_light.png" alt="Farmers &amp; Company" style="height:72px;width:auto;align-self:flex-start">
-<p>Antonius Caviar is sold in Lithuania by Farmers &amp; Company, UAB, Vilnius.</p>
+<p data-t="foot.sold">Antonius Caviar is sold in Lithuania by Farmers &amp; Company, UAB, Vilnius.</p>
 </div>
 <div class="col">
-<p class="label">Contact</p>
-<p>Questions about your order? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.</p>
+<p data-t="foot.contact" class="label">Contact</p>
+<p data-t="foot.q">Questions about your order? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.</p>
 </div>
 <div class="col">
-<p class="label">Information</p>
-<a href="#delivery">Delivery</a>
-<a href="/terms.html">Terms of sale</a>
-<a href="/privacy.html">Privacy policy</a>
-<a href="/withdraw.html">Withdraw from contract here</a>
+<p data-t="foot.info" class="label">Information</p>
+<a href="#delivery" data-t="foot.delivery">Delivery</a>
+<a href="/terms.html" data-t="foot.terms" data-page="terms">Terms of sale</a>
+<a href="/privacy.html" data-t="foot.privacy" data-page="privacy">Privacy policy</a>
+<a href="/withdraw.html" data-t="foot.withdraw" data-page="withdraw">Withdraw from contract here</a>
 </div>
 </div>
 </footer>
@@ -265,7 +279,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 <div id="cartBar" role="status" aria-live="polite">
 <div class="wrap">
 <p><strong id="barLast"></strong> <span id="barSum"></span></p>
-<a href="#order">Go to your order</a>
+<a data-t="bar.go" href="#order">Go to your order</a>
 </div>
 </div>
 
@@ -287,19 +301,177 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       desc: 'The largest Oscietra grain, from sturgeon raised for up to 15 years. Buttery and nutty, delicate yet rich.', grain: 'Over 3.0 mm, large', aroma: 'Walnut, butter, algae',
       shots: ['caviar_oscietra_6', 'oscietra_caviar_6', 'oscietra_label_6'] }
   ];
-  var SHOT_LABELS = ['tin and caviar', 'the caviar', 'the tin'];
   var EXTRAS = [
     { id: 'spoon', name: 'Mother-of-pearl spoon', note: 'Engraved Antonius Caviar spoon for serving.', img: 'spoon_cut', alt: 'Mother-of-pearl caviar spoon', price: 15 },
     { id: 'opener', name: 'Tin opener', note: 'Steel key for opening the caviar tin.', img: 'opener_cut', alt: 'Steel caviar tin opener', price: 15 }
   ];
   var CATALOG = {};
-  PRODUCTS.forEach(function (p) {
-    CATALOG[p.id + '-30'] = { label: p.name + ', 30 g', price: p.p30 };
-    CATALOG[p.id + '-50'] = { label: p.name + ', 50 g', price: p.p50 };
-  });
-  EXTRAS.forEach(function (e) { CATALOG[e.id] = { label: e.name, price: e.price }; });
+  function relabel() {
+    PRODUCTS.forEach(function (p) {
+      CATALOG[p.id + '-30'] = { label: p.name + ', 30 g', price: p.p30, card: p.id };
+      CATALOG[p.id + '-50'] = { label: p.name + ', 50 g', price: p.p50, card: p.id };
+    });
+    EXTRAS.forEach(function (e) { CATALOG[e.id] = { label: pt(e.id, 'name', e.name), price: e.price }; });
+  }
 
-  var sizes = {}, shots = {}, cart = {}, busy = false, errorText = '';
+  // ---- Language ----------------------------------------------------------------
+  var STR = {
+    en: {
+      'title': 'Caviar – Farmers & Company',
+      'cartlink': 'Your order',
+      'nav.caviar': 'Caviar', 'nav.acc': 'Accessories', 'nav.about': 'About', 'nav.delivery': 'Delivery',
+      'hero.eyebrow': 'Antonius Caviar · Sturgeon caviar malossol',
+      'hero.h1': 'Caviar for the Christmas table, delivered to your door.',
+      'hero.p': 'Siberian and Oscietra in 30 g and 50 g tins. Delivered chilled, anywhere in Lithuania, within 3 working days.',
+      'hero.btn': 'Choose your caviar',
+      'hero.small': 'We deliver in Lithuania only. Free delivery from 150 €.',
+      'hero.aria': 'A tin of Antonius Oscietra caviar with the lid sliding off',
+      'xmas.label': 'Christmas',
+      'xmas.p': 'Order by Thursday 17 December for delivery before Christmas.',
+      'sel.eyebrow': 'The selection', 'sel.h2': 'Four caviars, two sizes',
+      'sel.p': 'All prices include VAT. Pick a size and add it to your order. Nutrition and ingredients are listed under each caviar.',
+      'acc.eyebrow': 'To serve', 'acc.h2': 'Spoon and tin opener',
+      'about.eyebrow': 'About the caviar', 'about.h2': 'Fresh, unpasteurised, from one family farm',
+      'about.o.h': 'Origin', 'about.o.p': 'Antonius Caviar raises its sturgeon on its own family farms in Poland. The fish spend the last stage in artesian water, and every tin can be traced back to the individual fish.',
+      'about.m.h': 'How it is made', 'about.m.p': 'Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.',
+      'about.s.h': 'How to serve', 'about.s.p': 'Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.',
+      'del.eyebrow': 'Delivery and care', 'del.h2': 'From our cold room to your fridge',
+      'del.1.h': 'Within 3 working days', 'del.1.p': 'We deliver chilled to any address in Lithuania within 3 working days of your order. We do not ship to other countries.',
+      'del.2.h': 'Free from 150 €', 'del.2.p': 'Delivery is free on orders from 150 €.',
+      'del.fee': function (m) { return 'Below that, delivery costs ' + m + '.'; },
+      'del.3.h': 'Keep it cold', 'del.3.p': 'Store unopened tins in the fridge at −3 to +2 °C. Never freeze caviar. Once opened, enjoy within 48 hours. The best-before date is printed on each tin.',
+      'order.eyebrow': 'Your order', 'order.h2': 'Review and pay',
+      'order.p1': 'You enter your delivery address in Lithuania and pay by card on the next step. Payment is handled securely by Stripe.',
+      'order.p2': 'Caviar is a perishable food, so it cannot be returned once delivered, unless it is faulty. The spoon and tin opener can be returned within 14 days. By paying you accept our <a href="{terms}">terms of sale</a>; read how we handle your data in our <a href="{privacy}">privacy policy</a>.',
+      'foot.sold': 'Antonius Caviar is sold in Lithuania by Farmers &amp; Company, UAB, Vilnius.',
+      'foot.contact': 'Contact', 'foot.q': 'Questions about your order? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
+      'foot.info': 'Information', 'foot.delivery': 'Delivery', 'foot.terms': 'Terms of sale', 'foot.privacy': 'Privacy policy', 'foot.withdraw': 'Withdraw from contract here',
+      'bar.go': 'Go to your order',
+      'added': function (l) { return l + ' added.'; }, 'addedBtn': 'Added ✓', 'add': 'Add to order', 'soldOut': 'Sold out',
+      'items': function (n) { return n + (n === 1 ? ' item' : ' items') + ' in your order'; },
+      'fish': 'fish', 'ingredients': function (roe, fish) { return [roe + ' (', fish, '), salt, preservative E 285.']; },
+      'per100': 'Average values per 100 g', 'facts': 'Nutrition and ingredients',
+      'nut': ['Energy', 'Fat', 'of which saturates', 'Carbohydrate', 'of which sugars', 'Protein', 'Salt'],
+      'images': 'Product images', 'shots': ['tin and caviar', 'the caviar', 'the tin'], 'size': 'Tin size',
+      'stars': function (n) { return n + ' stars'; }, 'grain': 'Grain', 'aroma': 'Aroma',
+      'st.in': 'In stock', 'st.low': 'Only a few left', 'st.out': 'Sold out',
+      'empty': 'Your order is empty. Add a tin above to get started.',
+      'less': 'One less ', 'more': 'One more ',
+      'cap': function (n) { return 'Only ' + n + ' available.'; },
+      'free': 'Free', 'atPay': 'Shown at payment', 'deliveryLT': 'Delivery in Lithuania',
+      'freeYes': 'Your order qualifies for free delivery.', 'freeMore': function (m) { return 'Add ' + m + ' more for free delivery.'; },
+      'totalVat': 'Total incl. VAT', 'pay': 'Continue to payment', 'opening': 'Opening payment…',
+      'errOff': 'Payment is not switched on yet. Please try again later.',
+      'errStock': 'Some items are no longer available in the quantity you chose. We have updated your order; please check it and try again.',
+      'errFail': 'We could not open the payment page. Please try again, or write to sp@farmersandcompany.lt.'
+    },
+    lt: {
+      'title': 'Ikrai – Farmers & Company',
+      'cartlink': 'Jūsų užsakymas',
+      'nav.caviar': 'Ikrai', 'nav.acc': 'Priedai', 'nav.about': 'Apie', 'nav.delivery': 'Pristatymas',
+      'hero.eyebrow': 'Antonius Caviar · Eršketų ikrai malossol',
+      'hero.h1': 'Ikrai Kalėdų stalui – pristatome iki jūsų durų.',
+      'hero.p': 'Siberian ir Oscietra ikrai 30 g ir 50 g skardinėse. Atvėsintus pristatome visoje Lietuvoje per 3 darbo dienas.',
+      'hero.btn': 'Išsirinkite ikrus',
+      'hero.small': 'Pristatome tik Lietuvoje. Nemokamas pristatymas nuo 150 €.',
+      'hero.aria': 'Antonius Oscietra ikrų skardinė, nuo kurios nuslysta dangtelis',
+      'xmas.label': 'Kalėdos',
+      'xmas.p': 'Užsisakykite iki gruodžio 17 d. (ketvirtadienio), kad gautumėte iki Kalėdų.',
+      'sel.eyebrow': 'Asortimentas', 'sel.h2': 'Keturi ikrai, du dydžiai',
+      'sel.p': 'Visos kainos nurodytos su PVM. Pasirinkite dydį ir įdėkite į užsakymą. Maistinė vertė ir sudedamosios dalys nurodytos prie kiekvienų ikrų.',
+      'acc.eyebrow': 'Patiekimui', 'acc.h2': 'Šaukštelis ir skardinės atidarytuvas',
+      'about.eyebrow': 'Apie ikrus', 'about.h2': 'Švieži, nepasterizuoti, iš vieno šeimos ūkio',
+      'about.o.h': 'Kilmė', 'about.o.p': 'Antonius Caviar eršketus augina savo šeimos ūkiuose Lenkijoje. Paskutinį etapą žuvys praleidžia arteziniame vandenyje, o kiekvieną skardinę galima atsekti iki konkrečios žuvies.',
+      'about.m.h': 'Kaip gaminami', 'about.m.p': 'Ruošiami tradiciniu malossol būdu, su nedideliu kiekiu druskos. Ikrai švieži ir nepasterizuoti, fasuojami rankomis ir tikrinami pagal spalvą, dydį, skonį ir konsistenciją.',
+      'about.s.h': 'Kaip patiekti', 'about.s.p': 'Skardinę atidarykite prieš pat patiekdami. Patiekite stikliniame ar krištoliniame inde arba skardinėje ant smulkinto ledo; naudokite perlamutrinį, o ne sidabrinį šaukštelį.',
+      'del.eyebrow': 'Pristatymas ir laikymas', 'del.h2': 'Iš mūsų šaldymo kameros – į jūsų šaldytuvą',
+      'del.1.h': 'Per 3 darbo dienas', 'del.1.p': 'Atvėsintus ikrus pristatome bet kuriuo adresu Lietuvoje per 3 darbo dienas nuo užsakymo. Į kitas šalis nesiunčiame.',
+      'del.2.h': 'Nemokamai nuo 150 €', 'del.2.p': 'Užsakymams nuo 150 € pristatymas nemokamas.',
+      'del.fee': function (m) { return 'Mažesniems užsakymams pristatymas kainuoja ' + m + '.'; },
+      'del.3.h': 'Laikykite šaltai', 'del.3.p': 'Neatidarytas skardines laikykite šaldytuve, nuo −3 iki +2 °C temperatūroje. Ikrų niekada neužšaldykite. Atidarytus suvalgykite per 48 valandas. Tinkamumo vartoti terminas nurodytas ant kiekvienos skardinės.',
+      'order.eyebrow': 'Jūsų užsakymas', 'order.h2': 'Peržiūrėkite ir apmokėkite',
+      'order.p1': 'Kitame žingsnyje įvesite pristatymo adresą Lietuvoje ir apmokėsite kortele. Mokėjimą saugiai apdoroja Stripe.',
+      'order.p2': 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Šaukštelį ir skardinės atidarytuvą galima grąžinti per 14 dienų. Apmokėdami sutinkate su mūsų <a href="{terms}">pardavimo taisyklėmis</a>; kaip tvarkome jūsų duomenis, rasite <a href="{privacy}">privatumo politikoje</a>.',
+      'foot.sold': 'Antonius Caviar Lietuvoje parduoda Farmers &amp; Company, UAB, Vilnius.',
+      'foot.contact': 'Kontaktai', 'foot.q': 'Turite klausimų dėl užsakymo? Rašykite mums adresu <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
+      'foot.info': 'Informacija', 'foot.delivery': 'Pristatymas', 'foot.terms': 'Pardavimo taisyklės', 'foot.privacy': 'Privatumo politika', 'foot.withdraw': 'Atsisakyti sutarties čia',
+      'bar.go': 'Į užsakymą',
+      'added': function (l) { return l + ' – įdėta į užsakymą.'; }, 'addedBtn': 'Įdėta ✓', 'add': 'Į užsakymą', 'soldOut': 'Išparduota',
+      'items': function (n) { var w = (n % 10 === 1 && n % 100 !== 11) ? 'prekė' : (n % 10 >= 2 && n % 10 <= 9 && (n % 100 < 11 || n % 100 > 19)) ? 'prekės' : 'prekių'; return 'Užsakyme ' + n + ' ' + w; },
+      'fish': 'žuvis', 'ingredients': function (roe, fish) { return [roe + ' (', fish, '), druska, konservantas E 285.']; },
+      'per100': 'Vidutinė maistinė vertė 100 g', 'facts': 'Maistinė vertė ir sudedamosios dalys',
+      'nut': ['Energinė vertė', 'Riebalai', 'iš kurių sočiosios riebalų rūgštys', 'Angliavandeniai', 'iš kurių cukrūs', 'Baltymai', 'Druska'],
+      'images': 'Produkto nuotraukos', 'shots': ['skardinė ir ikrai', 'ikrai', 'skardinė'], 'size': 'Skardinės dydis',
+      'stars': function (n) { return n + ' žvaigždutės'; }, 'grain': 'Ikrelių dydis', 'aroma': 'Aromatas',
+      'st.in': 'Yra sandėlyje', 'st.low': 'Liko vos keli', 'st.out': 'Išparduota',
+      'empty': 'Jūsų užsakymas tuščias. Pradėkite nuo skardinės aukščiau.',
+      'less': 'Vienu mažiau: ', 'more': 'Vienu daugiau: ',
+      'cap': function (n) { return 'Galima užsisakyti tik ' + n + ' vnt.'; },
+      'free': 'Nemokamai', 'atPay': 'Bus parodyta apmokant', 'deliveryLT': 'Pristatymas Lietuvoje',
+      'freeYes': 'Jūsų užsakymui taikomas nemokamas pristatymas.', 'freeMore': function (m) { return 'Iki nemokamo pristatymo trūksta ' + m + '.'; },
+      'totalVat': 'Iš viso su PVM', 'pay': 'Pereiti prie apmokėjimo', 'opening': 'Atidaromas apmokėjimas…',
+      'errOff': 'Apmokėjimas dar neįjungtas. Bandykite vėliau.',
+      'errStock': 'Kai kurių prekių nebėra tiek, kiek pasirinkote. Atnaujinome jūsų užsakymą – patikrinkite jį ir bandykite dar kartą.',
+      'errFail': 'Nepavyko atidaryti apmokėjimo puslapio. Bandykite dar kartą arba rašykite sp@farmersandcompany.lt.'
+    }
+  };
+  // Product texts that differ by language (names and prices are shared).
+  var PTXT = {
+    lt: {
+      sib5: { species: 'Sibirinis eršketas', roe: 'Sibirinio eršketo ikrai', desc: 'Intensyvaus, sudėtingo skonio, su aštriomis, medienos natomis, švelniai sūrūs, su švariu, ilgai išliekančiu poskoniu.', grain: '2,6–2,7 mm, vidutiniai', aroma: 'Austrės, nori, umami' },
+      sib6: { species: 'Sibirinis eršketas', roe: 'Sibirinio eršketo ikrai', desc: 'Stambiausi Siberian ikrai iš brandžiausių eršketų. Intensyvūs, su aštriomis, medienos natomis ir švariu poskoniu.', grain: '2,7–3,2 mm, stambūs', aroma: 'Austrės, nori, umami' },
+      osc5: { species: 'Rusinis eršketas', roe: 'Rusinio eršketo ikrai', desc: 'Kreminiai ir sviestiniai, su riešutų natomis ir subtiliu sūrumu. Tvirti ikreliai tirpsta burnoje.', grain: '2,9–3,0 mm, vidutiniai', aroma: 'Graikinis riešutas, sviestas, dumbliai' },
+      osc6: { species: 'Rusinis eršketas', roe: 'Rusinio eršketo ikrai', desc: 'Stambiausi Oscietra ikrai iš iki 15 metų augintų eršketų. Sviestiniai ir riešutiniai, subtilūs, bet sodrūs.', grain: 'Daugiau nei 3,0 mm, stambūs', aroma: 'Graikinis riešutas, sviestas, dumbliai' },
+      spoon: { name: 'Perlamutrinis šaukštelis', note: 'Graviruotas Antonius Caviar šaukštelis ikrams patiekti.', alt: 'Perlamutrinis šaukštelis ikrams' },
+      opener: { name: 'Skardinės atidarytuvas', note: 'Plieninis raktelis ikrų skardinei atidaryti.', alt: 'Plieninis ikrų skardinės atidarytuvas' }
+    }
+  };
+  function pickLang() {
+    var q = (location.search.match(/[?&]lang=(en|lt)\b/) || [])[1];
+    if (q) return q;
+    try { var s = localStorage.getItem('fc-lang'); if (s === 'en' || s === 'lt') return s; } catch (e) {}
+    var langs = navigator.languages || [navigator.language || ''];
+    return langs.some(function (l) { return /^lt\b/i.test(l); }) ? 'lt' : 'en';
+  }
+  var LANG = pickLang();
+  function t(k) { return (STR[LANG] && STR[LANG][k] !== undefined) ? STR[LANG][k] : STR.en[k]; }
+  function pt(id, field, fallback) { var o = PTXT[LANG] && PTXT[LANG][id]; return o && o[field] !== undefined ? o[field] : fallback; }
+  function page(name) { return '/' + name + (LANG === 'lt' ? '-lt' : '') + '.html'; }
+  function num(v) { return LANG === 'lt' ? String(v).replace(/(\d)\.(\d)/g, '$1,$2') : v; }
+  function applyStatic() {
+    document.documentElement.lang = LANG;
+    document.title = t('title');
+    document.querySelectorAll('[data-t]').forEach(function (n) {
+      var v = t(n.getAttribute('data-t'));
+      if (typeof v === 'string') n.innerHTML = v.replace('{terms}', page('terms')).replace('{privacy}', page('privacy'));
+    });
+    document.querySelectorAll('[data-t-aria]').forEach(function (n) { n.setAttribute('aria-label', t(n.getAttribute('data-t-aria'))); });
+    document.querySelectorAll('[data-page]').forEach(function (n) { n.setAttribute('href', page(n.getAttribute('data-page'))); });
+    document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === LANG)); });
+    if (feeCents !== null) document.getElementById('feeText').textContent = t('del.fee')(money(feeCents / 100));
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      LANG = b.getAttribute('data-lang');
+      try { localStorage.setItem('fc-lang', LANG); } catch (e) {}
+      var u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
+      relabel(); applyStatic(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart();
+    });
+  });
+
+  // ---- Stock ---------------------------------------------------------------------
+  var STOCK = {}; // key -> { status: 'in'|'low'|'out', max }
+  function maxFor(k) { return STOCK[k] ? STOCK[k].max : 20; }
+  function statusFor(k) { return STOCK[k] ? STOCK[k].status : 'in'; }
+  function loadStock() {
+    return fetch('/api/stock', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      STOCK = d.items || {};
+      Object.keys(cart).forEach(function (k) { var m = maxFor(k); if (m <= 0) delete cart[k]; else if (cart[k] > m) cart[k] = m; });
+      save(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart();
+    }).catch(function () {});
+  }
+  relabel();
+  var sizes = {}, shots = {}, cart = {}, busy = false, errorText = '', capped = {};
   try {
     var saved = JSON.parse(localStorage.getItem('fc-caviar-cart') || '{}');
     Object.keys(saved).forEach(function (k) { if (CATALOG[k] && saved[k] > 0) cart[k] = Math.min(20, Math.floor(saved[k])); });
@@ -318,36 +490,40 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
   }
   var lastAdded = '', orderVisible = false;
   function add(key, btn) {
-    cart[key] = Math.min(20, (cart[key] || 0) + 1); errorText = ''; save();
-    lastAdded = CATALOG[key].label + ' added.';
+    var m = maxFor(key);
+    if ((cart[key] || 0) >= m) { capped[key] = true; renderCart(); return; }
+    cart[key] = Math.min(m, (cart[key] || 0) + 1); errorText = ''; save();
+    lastAdded = t('added')(CATALOG[key].label);
     renderCart();
     if (btn) {
       if (window.__fly) window.__fly(btn);
-      btn.textContent = 'Added ✓'; btn.classList.add('added');
+      btn.textContent = t('addedBtn'); btn.classList.add('added');
       clearTimeout(btn._t);
-      btn._t = setTimeout(function () { btn.textContent = 'Add to order'; btn.classList.remove('added'); }, 1600);
+      btn._t = setTimeout(function () { btn.textContent = t('add'); btn.classList.remove('added'); }, 1600);
     }
   }
   function renderBar(count, total) {
     var bar = document.getElementById('cartBar');
     document.getElementById('barLast').textContent = lastAdded;
-    document.getElementById('barSum').textContent = count + (count === 1 ? ' item' : ' items') + ' in your order · ' + money(total);
+    document.getElementById('barSum').textContent = t('items')(count) + ' · ' + money(total);
     var show = count > 0 && !orderVisible;
     bar.classList.toggle('show', show);
     document.body.style.paddingBottom = show ? bar.offsetHeight + 'px' : '';
   }
   function change(key, d) {
-    var q = (cart[key] || 0) + d;
-    if (q <= 0) delete cart[key]; else cart[key] = Math.min(20, q);
+    var q = (cart[key] || 0) + d, m = maxFor(key);
+    capped[key] = d > 0 && q > m;
+    if (q <= 0) delete cart[key]; else cart[key] = Math.min(m, q);
     errorText = ''; save(); renderCart();
   }
 
   var openFacts = {};
   function nutritionBlock(p) {
-    var ingredients = el('p', {}, [document.createTextNode(p.roe + ' ('), el('strong', { text: 'fish' }), document.createTextNode('), salt, preservative E 285.')]);
-    var rows = p.nutrition.map(function (r) { return el('tr', {}, [el('th', { scope: 'row', text: r[0] }), el('td', { text: r[1] })]); });
-    var table = el('table', {}, [el('caption', { text: 'Average values per 100 g' }), el('tbody', {}, rows)]);
-    var d = el('details', {}, [el('summary', { text: 'Nutrition and ingredients' }), ingredients, table]);
+    var parts = t('ingredients')(pt(p.id, 'roe', p.roe), t('fish'));
+    var ingredients = el('p', {}, [document.createTextNode(parts[0]), el('strong', { text: parts[1] }), document.createTextNode(parts[2])]);
+    var rows = p.nutrition.map(function (r, i) { return el('tr', {}, [el('th', { scope: 'row', text: t('nut')[i] }), el('td', { text: num(r[1]) })]); });
+    var table = el('table', {}, [el('caption', { text: t('per100') }), el('tbody', {}, rows)]);
+    var d = el('details', {}, [el('summary', { text: t('facts') }), ingredients, table]);
     if (openFacts[p.id]) d.setAttribute('open', '');
     d.addEventListener('toggle', function () { openFacts[p.id] = d.open; });
     return d;
@@ -359,11 +535,11 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     PRODUCTS.forEach(function (p) {
       var size = sizes[p.id] || 30, shot = shots[p.id] || 0;
       var price = size === 30 ? p.p30 : p.p50;
-      var thumbs = el('div', { class: 'thumbs', role: 'group', 'aria-label': 'Product images' }, p.shots.map(function (s, i) {
-        return el('button', { type: 'button', 'aria-label': p.name + ': ' + SHOT_LABELS[i], 'aria-pressed': String(i === shot),
+      var thumbs = el('div', { class: 'thumbs', role: 'group', 'aria-label': t('images') }, p.shots.map(function (s, i) {
+        return el('button', { type: 'button', 'aria-label': p.name + ': ' + t('shots')[i], 'aria-pressed': String(i === shot),
           onclick: function () { shots[p.id] = i; changed = p.id; renderProducts(); } }, [el('img', { src: '/img/' + s + '.webp', alt: '', loading: 'lazy' })]);
       }));
-      var sizeBtns = el('div', { class: 'sizes', role: 'group', 'aria-label': 'Tin size' }, [30, 50].map(function (g) {
+      var sizeBtns = el('div', { class: 'sizes', role: 'group', 'aria-label': t('size') }, [30, 50].map(function (g) {
         return el('button', { type: 'button', text: g + ' g', 'aria-pressed': String(g === size),
           onclick: function () { sizes[p.id] = g; changedPrice = p.id; renderProducts(); } });
       }));
@@ -371,37 +547,49 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
         el('div', { class: 'shot' }, [el('img', { class: changed === p.id ? 'swap' : '', src: '/img/' + p.shots[shot] + '.webp', alt: 'Antonius Caviar ' + p.name })]),
         thumbs,
         el('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
-          el('p', { class: 'stars', role: 'img', 'aria-label': p.stars + ' stars', text: new Array(p.stars + 1).join('★') }),
+          el('p', { class: 'stars', role: 'img', 'aria-label': t('stars')(p.stars), text: new Array(p.stars + 1).join('★') }),
           el('h3', { class: 'display', text: p.name }),
-          el('p', { class: 'small', text: p.species }),
+          el('p', { class: 'small', text: pt(p.id, 'species', p.species) }),
           el('p', { class: 'small', style: 'font-style:italic', text: p.latin })
         ]),
-        el('p', { class: 'desc', text: p.desc }),
+        el('p', { class: 'desc', text: pt(p.id, 'desc', p.desc) }),
         el('dl', { class: 'facts' }, [
-          el('dt', { text: 'Grain' }), el('dd', { text: p.grain }),
-          el('dt', { text: 'Aroma' }), el('dd', { text: p.aroma })
+          el('dt', { text: t('grain') }), el('dd', { text: pt(p.id, 'grain', p.grain) }),
+          el('dt', { text: t('aroma') }), el('dd', { text: pt(p.id, 'aroma', p.aroma) })
         ]),
         sizeBtns,
         el('div', { class: 'pricerow' }, [
           el('p', { class: changedPrice === p.id ? 'price swap' : 'price', text: money(price) }),
           el('p', { class: 'small', style: 'font-size:13px', text: money(price / size) + ' / g' })
         ]),
-        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(p.id + '-' + size, this); } }),
+        stockLine(p.id + '-' + size),
+        addButton(p.id + '-' + size),
         nutritionBlock(p)
       ]));
     });
+  }
+  function stockLine(k) {
+    var st = statusFor(k);
+    return el('p', { class: 'stock ' + st, text: t('st.' + st) });
+  }
+  function addButton(k) {
+    var out = statusFor(k) === 'out';
+    var b = el('button', { type: 'button', class: 'btn', text: out ? t('soldOut') : t('add'), onclick: function () { add(k, this); } });
+    if (out) b.setAttribute('disabled', '');
+    return b;
   }
   function renderExtras() {
     var root = document.getElementById('extras');
     EXTRAS.forEach(function (e) {
       root.appendChild(el('article', { class: 'card' }, [
-        el('div', { class: 'shot' }, [el('img', { src: '/img/' + e.img + '.webp', alt: e.alt, loading: 'lazy' })]),
+        el('div', { class: 'shot' }, [el('img', { src: '/img/' + e.img + '.webp', alt: pt(e.id, 'alt', e.alt), loading: 'lazy' })]),
         el('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
-          el('h3', { class: 'display', style: 'min-height:2.2em', text: e.name }),
-          el('p', { class: 'desc note-h', text: e.note })
+          el('h3', { class: 'display', style: 'min-height:2.2em', text: pt(e.id, 'name', e.name) }),
+          el('p', { class: 'desc note-h', text: pt(e.id, 'note', e.note) })
         ]),
         el('p', { class: 'price', text: money(e.price) }),
-        el('button', { type: 'button', class: 'btn', text: 'Add to order', onclick: function () { add(e.id, this); } })
+        stockLine(e.id),
+        addButton(e.id)
       ]));
     });
     root.appendChild(el('div', { class: 'spacer', 'aria-hidden': 'true' }));
@@ -414,30 +602,34 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     keys.forEach(function (k) { subtotal += CATALOG[k].price * cart[k]; count += cart[k]; });
     document.getElementById('cartCount').textContent = count;
     renderBar(count, subtotal);
-    if (!count) { box.appendChild(el('p', { class: 'small', style: 'font-size:16px', text: 'Your order is empty. Add a tin above to get started.' })); return; }
+    if (!count) { box.appendChild(el('p', { class: 'small', style: 'font-size:16px', text: t('empty') })); return; }
     var list = el('div', {}, keys.map(function (k) {
-      var item = CATALOG[k];
-      return el('div', { class: 'line' }, [
+      var item = CATALOG[k], atMax = cart[k] >= maxFor(k);
+      var plus = el('button', { type: 'button', 'aria-label': t('more') + item.label, text: '+', onclick: function () { change(k, 1); } });
+      if (atMax) plus.setAttribute('disabled', '');
+      var kids = [
         el('p', { class: 'name', text: item.label }),
         el('div', { class: 'qty' }, [
-          el('button', { type: 'button', 'aria-label': 'One less ' + item.label, text: '−', onclick: function () { change(k, -1); } }),
+          el('button', { type: 'button', 'aria-label': t('less') + item.label, text: '−', onclick: function () { change(k, -1); } }),
           el('span', { text: String(cart[k]) }),
-          el('button', { type: 'button', 'aria-label': 'One more ' + item.label, text: '+', onclick: function () { change(k, 1); } })
+          plus
         ]),
         el('p', { class: 'sum', text: money(item.price * cart[k]) })
-      ]);
+      ];
+      if (atMax && (capped[k] || maxFor(k) < 20)) kids.push(el('p', { class: 'capnote', text: t('cap')(maxFor(k)) }));
+      return el('div', { class: 'line' }, kids);
     }));
     var free = subtotal >= FREE_FROM;
     var fee = free ? 0 : (feeCents || 0) / 100;
-    var deliveryText = free ? 'Free' : (feeCents === null ? 'Shown at payment' : money(fee));
+    var deliveryText = free ? t('free') : (feeCents === null ? t('atPay') : money(fee));
     box.appendChild(list);
-    box.appendChild(el('div', { class: 'row' }, [el('p', { text: 'Delivery in Lithuania' }), el('p', { text: deliveryText })]));
-    box.appendChild(el('p', { class: 'note', text: free ? 'Your order qualifies for free delivery.' : 'Add ' + money(FREE_FROM - subtotal) + ' more for free delivery.' }));
+    box.appendChild(el('div', { class: 'row' }, [el('p', { text: t('deliveryLT') }), el('p', { text: deliveryText })]));
+    box.appendChild(el('p', { class: 'note', text: free ? t('freeYes') : t('freeMore')(money(FREE_FROM - subtotal)) }));
     box.appendChild(el('div', { class: 'total' }, [
-      el('p', { style: 'font-size:14px;letter-spacing:.1em;text-transform:uppercase', text: 'Total incl. VAT' }),
+      el('p', { style: 'font-size:14px;letter-spacing:.1em;text-transform:uppercase', text: t('totalVat') }),
       el('p', { class: 'price', text: money(subtotal + fee) })
     ]));
-    var pay = el('button', { type: 'button', class: 'btn', style: 'min-height:56px;font-size:15px', text: busy ? 'Opening payment…' : 'Continue to payment', onclick: checkout });
+    var pay = el('button', { type: 'button', class: 'btn', style: 'min-height:56px;font-size:15px', text: busy ? t('opening') : t('pay'), onclick: checkout });
     if (busy) pay.setAttribute('disabled', '');
     box.appendChild(pay);
     if (errorText) box.appendChild(el('p', { class: 'error', role: 'alert', text: errorText }));
@@ -446,17 +638,23 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     if (busy) return;
     busy = true; errorText = ''; renderCart();
     var items = Object.keys(cart).map(function (k) { return { id: k, qty: cart[k] }; });
-    fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: items }) })
+    fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: items, lang: LANG }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (res) {
         if (res.ok && res.data.url) { window.location.href = res.data.url; return; }
+        if (res.data && res.data.error === 'stock' && res.data.available) {
+          Object.keys(res.data.available).forEach(function (k) {
+            var n = res.data.available[k];
+            STOCK[k] = { status: n <= 0 ? 'out' : n <= 3 ? 'low' : 'in', max: Math.min(n, 20) };
+            if (n <= 0) delete cart[k]; else cart[k] = Math.min(cart[k], n);
+          });
+          save(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras();
+        }
         throw new Error(res.data && res.data.error ? res.data.error : 'failed');
       })
       .catch(function (err) {
         busy = false;
-        errorText = err.message === 'not_configured'
-          ? 'Payment is not switched on yet. Please try again later.'
-          : 'We could not open the payment page. Please try again, or write to sp@farmersandcompany.lt.';
+        errorText = err.message === 'not_configured' ? t('errOff') : err.message === 'stock' ? t('errStock') : t('errFail');
         renderCart();
       });
   }
@@ -464,9 +662,9 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     new IntersectionObserver(function (entries) { orderVisible = entries[0].isIntersecting; renderCart(); }, { threshold: 0.15 })
       .observe(document.getElementById('order'));
   }
-  window.addEventListener('pageshow', function () { busy = false; renderCart(); });
+  window.addEventListener('pageshow', function (e) { busy = false; renderCart(); if (e.persisted) loadStock(); });
 
-  renderProducts(); renderExtras(); renderCart();
+  applyStatic(); renderProducts(); renderExtras(); renderCart(); loadStock();
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Sticky header gets a frosted look once the visitor scrolls.
   var header = document.querySelector('header');
@@ -513,7 +711,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
   fetch('/api/config').then(function (r) { return r.json(); }).then(function (c) {
     if (typeof c.shippingFeeCents === 'number') {
       feeCents = c.shippingFeeCents;
-      document.getElementById('feeText').textContent = 'Below that, delivery costs ' + money(feeCents / 100) + '.';
+      document.getElementById('feeText').textContent = t('del.fee')(money(feeCents / 100));
       renderCart();
     }
   }).catch(function () {});

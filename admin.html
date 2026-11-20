@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lager – caviar-shop</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/legal.css">
+<style>
+table{width:100%;border-collapse:collapse;margin-top:16px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;color:var(--soft);font-size:15px}
+th{color:var(--text);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+td input{width:96px}
+td.n{text-align:right}
+.out{color:#F3B6A8;font-weight:600}
+.low{color:#f6e7b0;font-weight:600}
+</style>
+</head>
+<body>
+<header><div class="in"><img src="/img/logo_light.png" alt="Farmers &amp; Company"><span style="color:var(--soft);font-size:14px">Lager</span></div></header>
+<main>
+<h1>Lager</h1>
+<div id="login">
+<p>Skriv adgangskoden for at se og rette lageret.</p>
+<label for="pw">Adgangskode</label>
+<input id="pw" type="password" autocomplete="current-password">
+<button class="btn" id="go" type="button">Log ind</button>
+</div>
+<div id="app" hidden>
+<p>Skriv, hvor mange af hver vare der kan <strong>sælges nu</strong>, altså på hylden og ikke allerede solgt. Siden trækker selv fra, når kunder betaler. Når der kommer nye dåser, lægger du dem oven i tallet og gemmer.</p>
+<p class="hint" id="setAt"></p>
+<table>
+<thead><tr><th>Vare</th><th>Til salg nu</th><th class="n">Solgt siden sidste opdatering</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<button class="btn" id="save" type="button">Gem lager</button>
+</div>
+<div id="msg" role="status" aria-live="polite" style="margin-top:16px"></div>
+</main>
+<script>
+(function () {
+  var pw = '';
+  try { pw = sessionStorage.getItem('fc-admin') || ''; } catch (e) {}
+  var msg = document.getElementById('msg');
+  function say(t, bad) { msg.innerHTML = t ? '<p class="note"' + (bad ? ' style="border-color:#F3B6A8"' : '') + '>' + t + '</p>' : ''; }
+  var ERR = { wrong_password: 'Forkert adgangskode.', no_password: 'Der er ikke sat en adgangskode i Vercel (ADMIN_PASSWORD).', no_storage: 'Lagerlageret er ikke forbundet.', failed: 'Noget gik galt. Prøv igen.' };
+  async function call(method, body) {
+    var r = await fetch('/api/admin-stock', { method: method, headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw }, body: body ? JSON.stringify(body) : undefined });
+    var d = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(d.error || 'failed');
+    return d;
+  }
+  function show(d) {
+    document.getElementById('login').hidden = true;
+    document.getElementById('app').hidden = false;
+    document.getElementById('setAt').textContent = d.on
+      ? 'Sidst opdateret ' + new Date(d.setAt * 1000).toLocaleString('da-DK') + '. Tallene herunder er det, der kan sælges lige nu.'
+      : 'Lageret er ikke sat endnu, så siden viser alt som på lager. Skriv tallene og gem for at slå lagerstyring til.';
+    var tb = document.getElementById('rows'); tb.textContent = '';
+    d.products.forEach(function (p) {
+      var tr = document.createElement('tr');
+      var n = p.available == null ? '' : Math.max(0, p.available);
+      var cls = p.available == null ? '' : p.available <= 0 ? 'out' : p.available <= 3 ? 'low' : '';
+      tr.innerHTML = '<td></td><td><input type="number" min="0" step="1" inputmode="numeric"></td><td class="n"></td>';
+      tr.children[0].textContent = p.name;
+      if (cls) tr.children[0].className = cls;
+      var inp = tr.querySelector('input'); inp.value = n; inp.dataset.id = p.id; inp.setAttribute('aria-label', 'Til salg nu: ' + p.name);
+      tr.children[2].textContent = d.on ? String(p.soldSince) : '–';
+      tb.appendChild(tr);
+    });
+  }
+  async function load() {
+    try { show(await call('GET')); say(''); }
+    catch (e) { document.getElementById('login').hidden = false; document.getElementById('app').hidden = true; if (pw) say(ERR[e.message] || ERR.failed, true); }
+  }
+  document.getElementById('go').addEventListener('click', function () {
+    pw = document.getElementById('pw').value;
+    try { sessionStorage.setItem('fc-admin', pw); } catch (e) {}
+    load();
+  });
+  document.getElementById('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('go').click(); });
+  document.getElementById('save').addEventListener('click', async function () {
+    var counts = {}, bad = false;
+    document.querySelectorAll('#rows input').forEach(function (i) {
+      var v = i.value.trim(); var n = Number(v);
+      if (v === '' || !Number.isInteger(n) || n < 0) bad = true; counts[i.dataset.id] = n;
+    });
+    if (bad) { say('Skriv et helt tal (0 eller mere) ud for hver vare.', true); return; }
+    this.disabled = true;
+    try { show(await call('POST', { counts: counts })); say('Lageret er gemt.'); }
+    catch (e) { say(ERR[e.message] || ERR.failed, true); }
+    this.disabled = false;
+  });
+  if (pw) load();
+})();
+</script>
+</body>
+</html>
