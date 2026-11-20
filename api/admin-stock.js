@@ -21,7 +21,8 @@ module.exports = async (req, res) => {
   if (!stock.enabled()) return res.status(503).json({ error: 'no_storage' });
   if (await guard.adminLocked(req)) return res.status(429).json({ error: 'locked' });
   if (!allowed(req)) {
-    await guard.adminFailed(req);
+    // Only an actual password counts as a guess; a visit without one (opening the page, link previews) does not.
+    if (req.headers['x-admin-password']) await guard.adminFailed(req);
     await new Promise((r) => setTimeout(r, 600));
     return res.status(401).json({ error: 'wrong_password' });
   }

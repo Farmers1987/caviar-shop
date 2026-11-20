@@ -52,15 +52,15 @@ const ADMIN_WINDOW = 15 * 60;
 async function adminLocked(req) {
   if (!token()) return false;
   try {
-    const mine = await recent('admin-fail', visitor(req), ADMIN_WINDOW);
-    const all = await recent('admin-fail', '', ADMIN_WINDOW);
+    const mine = await recent('admin-failed', visitor(req), ADMIN_WINDOW);
+    const all = await recent('admin-failed', '', ADMIN_WINDOW);
     if (mine >= 5 || all >= 30) { console.warn('admin locked', { who: visitor(req).slice(0, 6), mine, all }); return true; }
     return false;
   } catch (e) { console.error('guard skipped', e.message); return false; }
 }
 async function adminFailed(req) {
   if (!token()) return;
-  try { const v = visitor(req); console.warn('admin wrong password', v.slice(0, 6)); await record('admin-fail', v); } catch (e) { console.error('guard record', e.message); }
+  try { const v = visitor(req); console.warn('admin wrong password', v.slice(0, 6)); await record('admin-failed', v); } catch (e) { console.error('guard record', e.message); }
 }
 
 module.exports = { over, adminLocked, adminFailed };
