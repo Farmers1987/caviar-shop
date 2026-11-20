@@ -7,6 +7,7 @@
 <meta name="description" content="Antonius sturgeon caviar, delivered chilled across Lithuania by Farmers &amp; Company.">
 <meta name="robots" content="noindex">
 <script src="/consent.js" defer></script>
+<script src="/newsletter.js" defer></script>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -493,6 +494,15 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     window.dataLayer.push({ ecommerce: null });
     window.dataLayer.push({ event: name, language: LANG, ecommerce: { currency: 'EUR', value: Math.round(value * 100) / 100, items: items } });
   }
+  var viewed = {};
+  function viewItem(k) { if (viewed[k]) return; viewed[k] = 1; track('view_item', CATALOG[k].price, [gaItem(k, 1)]); }
+  function listView() {
+    var items = Object.keys(CATALOG).map(function (k, i) { var it = gaItem(k, 1); it.index = i; it.item_list_name = 'Caviar shop'; return it; });
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ ecommerce: null });
+    window.dataLayer.push({ event: 'view_item_list', language: LANG, ecommerce: { item_list_id: 'caviar_shop', item_list_name: 'Caviar shop', items: items } });
+  }
+  var cartViewed = false;
   function save() { try { localStorage.setItem('fc-caviar-cart', JSON.stringify(cart)); } catch (e) {} }
   function money(v) { return v.toFixed(2).replace('.', ',') + ' €'; }
   function el(tag, attrs, kids) {
@@ -530,6 +540,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
   }
   function change(key, d) {
     var q = (cart[key] || 0) + d, m = maxFor(key);
+    if (d < 0 && cart[key]) track('remove_from_cart', CATALOG[key].price, [gaItem(key, 1)]);
     capped[key] = d > 0 && q > m;
     if (q <= 0) delete cart[key]; else cart[key] = Math.min(m, q);
     errorText = ''; save(); renderCart();
@@ -543,7 +554,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     var table = el('table', {}, [el('caption', { text: t('per100') }), el('tbody', {}, rows)]);
     var d = el('details', {}, [el('summary', { text: t('facts') }), ingredients, table]);
     if (openFacts[p.id]) d.setAttribute('open', '');
-    d.addEventListener('toggle', function () { openFacts[p.id] = d.open; });
+    d.addEventListener('toggle', function () { openFacts[p.id] = d.open; if (d.open) viewItem(p.id + '-' + (sizes[p.id] || 30)); });
     return d;
   }
   var changed = null, changedPrice = null;
@@ -555,11 +566,11 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       var price = size === 30 ? p.p30 : p.p50;
       var thumbs = el('div', { class: 'thumbs', role: 'group', 'aria-label': t('images') }, p.shots.map(function (s, i) {
         return el('button', { type: 'button', 'aria-label': p.name + ': ' + t('shots')[i], 'aria-pressed': String(i === shot),
-          onclick: function () { shots[p.id] = i; changed = p.id; renderProducts(); } }, [el('img', { src: '/img/' + s + '.webp', alt: '', loading: 'lazy' })]);
+          onclick: function () { shots[p.id] = i; changed = p.id; renderProducts(); viewItem(p.id + '-' + (sizes[p.id] || 30)); } }, [el('img', { src: '/img/' + s + '.webp', alt: '', loading: 'lazy' })]);
       }));
       var sizeBtns = el('div', { class: 'sizes', role: 'group', 'aria-label': t('size') }, [30, 50].map(function (g) {
         return el('button', { type: 'button', text: g + ' g', 'aria-pressed': String(g === size),
-          onclick: function () { sizes[p.id] = g; changedPrice = p.id; renderProducts(); } });
+          onclick: function () { sizes[p.id] = g; changedPrice = p.id; renderProducts(); viewItem(p.id + '-' + g); } });
       }));
       root.appendChild(el('article', { class: 'card' }, [
         el('div', { class: 'shot' }, [el('img', { class: changed === p.id ? 'swap' : '', src: '/img/' + p.shots[shot] + '.webp', alt: 'Antonius Caviar ' + p.name })]),
@@ -678,12 +689,16 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       });
   }
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) { orderVisible = entries[0].isIntersecting; renderCart(); }, { threshold: 0.15 })
+    new IntersectionObserver(function (entries) {
+      orderVisible = entries[0].isIntersecting; renderCart();
+      var keys = Object.keys(cart);
+      if (orderVisible && keys.length && !cartViewed) { cartViewed = true; track('view_cart', keys.reduce(function (s, k) { return s + CATALOG[k].price * cart[k]; }, 0), keys.map(function (k) { return gaItem(k, cart[k]); })); }
+    }, { threshold: 0.15 })
       .observe(document.getElementById('order'));
   }
   window.addEventListener('pageshow', function (e) { busy = false; renderCart(); if (e.persisted) loadStock(); });
 
-  applyStatic(); renderProducts(); renderExtras(); renderCart(); loadStock();
+  applyStatic(); renderProducts(); renderExtras(); renderCart(); loadStock(); listView();
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Sticky header gets a frosted look once the visitor scrolls.
   var header = document.querySelector('header');

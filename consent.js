@@ -8,7 +8,7 @@
  * GA4 itself is set up inside Tag Manager. With no ID, the banner still works but loads nothing.
  */
 (function () {
-  var GTM_ID = '';            // e.g. 'GTM-ABC1234'
+  var GTM_ID = 'GTM-PSQXGJ7X'; // Tag Manager container "Farmersandcompany.lt (caviar, b2c)"
   var KEY = 'fc-consent';
   var VERSION = 1;            // raise to ask everyone again (e.g. after adding new tools)
 
