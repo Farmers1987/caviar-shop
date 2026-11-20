@@ -46,7 +46,8 @@
     + '@media (prefers-reduced-motion:reduce){#fc-nl-back,#fc-nl{transition:none}}';
 
   var shown = false, lastFocus = null;
-  function show() {
+  function dl(o) { window.dataLayer = window.dataLayer || []; o.language = lang(); window.dataLayer.push(o); }
+  function show(why) {
     if (shown || snoozed() || document.getElementById('fc-consent')) return;
     shown = true;
     var t = T[lang()];
@@ -60,11 +61,13 @@
       + '<button class="go" type="submit">' + t.button + '</button></form>'
       + '<p class="msg" role="status" aria-live="polite"></p><p class="legal">' + t.legal + '</p></div>';
     document.body.appendChild(back);
+    dl({ event: 'newsletter_popup_view', popup_trigger: why });
     lastFocus = document.activeElement;
     requestAnimationFrame(function () { back.classList.add('in'); });
+    var done = false;
     var box = back.querySelector('#fc-nl'), form = back.querySelector('form'), msg = back.querySelector('.msg'), email = form.querySelector('input[type=email]');
     setTimeout(function () { email.focus(); }, 50);
-    function close() { snooze(30); back.remove(); document.removeEventListener('keydown', onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { if (!done) dl({ event: 'newsletter_popup_close' }); snooze(30); back.remove(); document.removeEventListener('keydown', onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function onKey(e) {
       if (e.key === 'Escape') close();
       if (e.key === 'Tab') { // keep focus inside the dialog
@@ -84,8 +87,8 @@
       fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v, website: form.website.value, lang: lang() }) })
         .then(function (r) { if (!r.ok) throw new Error(); })
         .then(function () {
-          form.remove(); msg.className = 'msg'; msg.textContent = t.ok; snooze(365);
-          window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: 'generate_lead', lead_source: 'newsletter_popup', language: lang() });
+          done = true; form.remove(); msg.className = 'msg'; msg.textContent = t.ok; snooze(365);
+          dl({ event: 'generate_lead', lead_source: 'newsletter_popup' });
         })
         .catch(function () { btn.disabled = false; msg.className = 'msg err'; msg.textContent = t.fail; });
     });
@@ -93,12 +96,12 @@
 
   function arm() {
     if (!consentDone()) { setTimeout(arm, 1500); return; } // wait for the cookie choice first
-    setTimeout(show, 25000);
+    setTimeout(function () { show('time_25s'); }, 25000);
     window.addEventListener('scroll', function onS() {
-      if (window.scrollY > (document.documentElement.scrollHeight - innerHeight) * 0.5) { window.removeEventListener('scroll', onS); show(); }
+      if (window.scrollY > (document.documentElement.scrollHeight - innerHeight) * 0.5) { window.removeEventListener('scroll', onS); show('scroll_50'); }
     }, { passive: true });
     if (window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
-      document.addEventListener('mouseout', function (e) { if (!e.relatedTarget && e.clientY <= 0) show(); });
+      document.addEventListener('mouseout', function (e) { if (!e.relatedTarget && e.clientY <= 0) show('exit_intent'); });
     }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
