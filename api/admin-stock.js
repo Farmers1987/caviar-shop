@@ -16,7 +16,8 @@ function allowed(req) {
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex');
-  if (!process.env.ADMIN_PASSWORD) return res.status(503).json({ error: 'no_password' });
+  // A password under 12 characters is treated as not set, so a weak one can never be used.
+  if ((process.env.ADMIN_PASSWORD || '').length < 12) return res.status(503).json({ error: 'no_password' });
   if (!stock.enabled()) return res.status(503).json({ error: 'no_storage' });
   if (await guard.adminLocked(req)) return res.status(429).json({ error: 'locked' });
   if (!allowed(req)) {
