@@ -42,7 +42,10 @@ header img{transition:height .4s ease}
 header.scrolled .logo{height:48px!important}
 nav{display:flex;flex-wrap:wrap;gap:8px 32px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 nav a{text-decoration:none;padding:12px 0}
-.cartlink{transition:background .3s ease,color .3s ease;display:inline-block;text-decoration:none;border:1px solid var(--accent);color:var(--accent);padding:11px 22px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.cartlink{white-space:nowrap}
+.cartlink .short{display:none}
+.cartlink .count{display:inline-block;min-width:22px;margin-left:10px;padding:0 6px;border-radius:11px;background:var(--accent);color:var(--ground);font-size:12px;line-height:22px;text-align:center;letter-spacing:0;font-weight:600}
+.cartlink{transition:background .3s ease,color .3s ease;display:inline-flex;align-items:center;text-decoration:none;border:1px solid var(--accent);color:var(--accent);padding:11px 22px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
 .hero{padding-top:72px;padding-bottom:88px;display:flex;flex-wrap:wrap;align-items:center;gap:48px}
 .hero>div{flex:1 1 440px;min-width:0}
 .hero .copy{display:flex;flex-direction:column;gap:28px}
@@ -153,11 +156,12 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 /* Caviar cards: every row (text, facts, sizes, price, button…) lines up across the cards. */
 #products{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px 24px;align-items:start}
 #products .card{min-width:0}
-@supports (grid-template-rows:subgrid){
+/* Only when cards stand side by side; on a phone (one column) each card simply stacks its content. */
+@media (min-width:600px){@supports (grid-template-rows:subgrid){
 #products .card{display:grid;grid-row:span 10;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:18px}
 #products .card>*{min-width:0}
 #products .desc{min-height:0}
-}
+}}
 .btn.added{background:var(--text)}
 #cartBar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--text);color:var(--ground);box-shadow:0 -6px 24px rgba(0,0,0,.35);transform:translateY(110%);transition:transform .25s ease}
 #cartBar.show{transform:none}
@@ -167,6 +171,20 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 #cartBar a{text-decoration:none;background:var(--ground);color:var(--text);padding:13px 26px;font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
 #cartBar a:hover{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){#cartBar{transition:none}html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.reveal,.hero .copy>*,.hero .tins{opacity:1!important;transform:none!important}.lid{transform:translate(52%,30%) rotate(9deg)!important}}
+/* Phone header: logo, language and basket on one line, the menu as one compact row under them. */
+@media (max-width:640px){
+header .bar{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"logo right" "nav nav";gap:10px 12px;padding-top:12px;padding-bottom:10px}
+header .bar>a:first-child{grid-area:logo}
+header .logo{height:44px!important}
+header .right{grid-area:right;justify-self:end;display:flex;align-items:center;gap:8px}
+header nav{grid-area:nav;flex-wrap:nowrap;justify-content:space-between;gap:12px;font-size:12px;letter-spacing:.06em;overflow-x:auto;scrollbar-width:none}
+header nav::-webkit-scrollbar{display:none}
+header nav a{padding:8px 0;white-space:nowrap}
+.lang button{min-width:38px;min-height:38px;font-size:12px}
+.cartlink{padding:8px 12px;font-size:12px;letter-spacing:.06em;min-height:40px}
+.cartlink .count{margin-left:8px}
+}
+@media (max-width:420px){.cartlink .long{display:none}.cartlink .short{display:inline}}
 @media (max-width:640px){#products .desc,.note-h{min-height:0}.wrap{padding-left:20px;padding-right:20px}.order .box{padding:20px}}
 </style>
 </head>
@@ -182,7 +200,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
 </nav>
 <div class="right">
 <div class="lang" role="group" aria-label="Language / Kalba"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="lt" aria-pressed="false">LT</button></div>
-<a class="cartlink" href="#order"><span data-t="cartlink">Your order</span> · <span id="cartCount">0</span></a>
+<a class="cartlink" href="#order"><span class="long" data-t="cartlink">Your order</span><span class="short" data-t="cartshort">Order</span><span id="cartCount" class="count">0</span></a>
 </div>
 </div>
 </header>
@@ -332,6 +350,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     en: {
       'title': 'Caviar – Farmers & Company',
       'cartlink': 'Your order',
+      'cartshort': 'Order',
       'nav.caviar': 'Caviar', 'nav.acc': 'Accessories', 'nav.about': 'About', 'nav.delivery': 'Delivery',
       'hero.eyebrow': 'Antonius Caviar · Sturgeon caviar malossol',
       'hero.h1': 'Caviar for the Christmas table, delivered to your door.',
@@ -381,6 +400,7 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
     lt: {
       'title': 'Ikrai – Farmers & Company',
       'cartlink': 'Jūsų užsakymas',
+      'cartshort': 'Užsakymas',
       'nav.caviar': 'Ikrai', 'nav.acc': 'Priedai', 'nav.about': 'Apie', 'nav.delivery': 'Pristatymas',
       'hero.eyebrow': 'Antonius Caviar · Eršketų ikrai malossol',
       'hero.h1': 'Ikrai Kalėdų stalui – pristatome iki jūsų durų.',
@@ -470,10 +490,19 @@ footer .label{color:var(--text);letter-spacing:.1em;text-transform:uppercase;fon
       if (from !== LANG) { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: 'language_switch', language: LANG, previous_language: from }); }
       try { localStorage.setItem('fc-lang', LANG); } catch (e) {}
       var u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
-      relabel(); applyStatic(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart();
+      relabel(); applyStatic(); renderProducts(); document.getElementById('extras').textContent = ''; renderExtras(); renderCart(); relayout();
       if (window.fcConsent) window.fcConsent.relabel();
     });
   });
+
+  // Safari/iOS can keep row heights measured for the old text, so text overlaps after a
+  // language switch or when the web font arrives. Hiding and showing the grid makes it measure again.
+  function relayout() {
+    var g = document.getElementById('products'); if (!g) return;
+    g.style.display = 'none'; void g.offsetHeight; g.style.display = '';
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+  window.addEventListener('load', relayout);
 
   // ---- Stock ---------------------------------------------------------------------
   var STOCK = {}; // key -> { status: 'in'|'low'|'out', max }
