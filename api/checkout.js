@@ -9,14 +9,14 @@ const TEXT = {
     submit: 'Caviar is a perishable food and cannot be returned once delivered, unless it is faulty. If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.',
     shipping: 'Chilled delivery in Lithuania, within 3 working days',
     pickup: 'Pick-up at Dirva, Dominikonų g. 11, Vilnius (from the next working day)',
-    submitPickup: 'Caviar is a perishable food and cannot be returned once collected, unless it is faulty. Your order will be ready to collect at Dirva, Dominikonų g. 11, Vilnius, from the next working day, during Dirva\'s opening hours. Please give your order number when you collect it.',
+    submitPickup: 'Caviar is a perishable food and cannot be returned once collected, unless it is faulty. Your order will be ready to collect at Dirva, Dominikonų g. 11, Vilnius, from the next working day, during Dirva\'s opening hours. Please bring your order number (for example the order confirmation email) so the shop can check your order when you collect it.',
   },
   lt: {
     note: 'Žinutė kurjeriui (durų kodas, aukštas)',
     submit: 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Jei parašysite žinutę kurjeriui, perduosime ją DPD tiksliai taip, kaip parašėte. Atidžiai patikrinkite durų kodus ir nurodymus – už pateiktą informaciją atsakote jūs.',
     shipping: 'Atvėsintas pristatymas Lietuvoje per 3 darbo dienas',
     pickup: 'Atsiėmimas „Dirvoje“, Dominikonų g. 11, Vilnius (nuo kitos darbo dienos)',
-    submitPickup: 'Ikrai yra greitai gendantis maisto produktas, todėl atsiimti negali būti grąžinami, nebent yra su trūkumais. Užsakymą galėsite atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje, nuo kitos darbo dienos „Dirvos“ darbo valandomis. Atsiimdami nurodykite užsakymo numerį.',
+    submitPickup: 'Ikrai yra greitai gendantis maisto produktas, todėl atsiimti negali būti grąžinami, nebent yra su trūkumais. Užsakymą galėsite atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje, nuo kitos darbo dienos „Dirvos“ darbo valandomis. Atvykdami turėkite užsakymo numerį (pvz., užsakymo patvirtinimo laišką), kad parduotuvėje galėtume patikrinti jūsų užsakymą.',
   },
 };
 
