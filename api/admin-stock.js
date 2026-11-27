@@ -1,6 +1,6 @@
 // Admin: read and set the number of tins available to sell. Protected by ADMIN_PASSWORD (set in Vercel).
 const crypto = require('crypto');
-const { CATALOG } = require('./_shared.js');
+const { STOCK_ITEMS } = require('./_shared.js');
 const stock = require('./_stock.js');
 const guard = require('./_guard.js');
 
@@ -37,8 +37,8 @@ module.exports = async (req, res) => {
       res.setHeader('Allow', 'GET, POST'); return res.status(405).json({ error: 'method' });
     }
     const av = key ? await stock.availability(key, { fresh: true }) : null;
-    const products = Object.keys(CATALOG).map((k) => ({
-      id: k, name: CATALOG[k].name,
+    const products = Object.keys(STOCK_ITEMS).map((k) => ({
+      id: k, name: STOCK_ITEMS[k].name,
       available: av ? av.available[k] : null,
       soldSince: av ? av.taken[k] || 0 : 0,
       batches: av && av.batches[k] ? stock.remainingBatches(av.batches[k], av.taken[k]) : [],

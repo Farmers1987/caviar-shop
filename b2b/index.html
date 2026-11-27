@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For professionals – Farmers &amp; Company</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/b2b/b2b.css">
+</head>
+<body>
+<main>
+<div class="layout" style="align-items:flex-start">
+<section style="flex:1 1 420px">
+<p class="eyebrow" data-t="lEyebrow"></p>
+<h1 class="display" data-t="lH"></h1>
+<p class="lead" data-t="lLead"></p>
+<p style="color:var(--soft)"><span data-t="lHome"></span> <a id="homeLink" href="/" data-t="lHomeLink"></a></p>
+</section>
+<aside style="flex:1 1 380px;position:static">
+<div class="panel" id="view"></div>
+</aside>
+</div>
+</main>
+<script src="/b2b/b2b.js"></script>
+<script>
+(function () {
+  var B = B2B, t = B.t, el = B.el;
+  B.header();
+  document.querySelectorAll('[data-t]').forEach(function (n) { n.textContent = t(n.getAttribute('data-t')); });
+  document.getElementById('homeLink').href = '/' + (B.LANG === 'lt' ? '?lang=lt' : '');
+  document.title = (B.LANG === 'lt' ? 'Verslo klientams' : 'For professionals') + ' – Farmers & Company';
+  var view = document.getElementById('view');
+  var shop = '/b2b/shop.html' + (B.LANG === 'lt' ? '?lang=lt' : '');
+
+  function field(label, input) { return el('label', { class: 'f' }, [label, input]); }
+  function msg(text, kind) { return el('p', { class: 'msg ' + (kind || ''), role: kind === 'bad' ? 'alert' : 'status', text: text }); }
+  function setMsg(box, text, kind) { box.textContent = ''; if (text) box.appendChild(msg(text, kind)); }
+
+  function loginView() {
+    view.textContent = '';
+    var email = el('input', { type: 'email', autocomplete: 'username', required: true });
+    var pw = el('input', { type: 'password', autocomplete: 'current-password', required: true });
+    var out = el('div', { 'aria-live': 'polite' });
+    var btn = el('button', { type: 'submit', class: 'btn', text: t('loginBtn') });
+    var form = el('form', { style: 'display:flex;flex-direction:column;gap:14px', onsubmit: function (e) {
+      e.preventDefault(); btn.disabled = true; setMsg(out, '');
+      B.login(email.value.trim(), pw.value).then(function (ok) {
+        if (ok) { location.href = shop; return; }
+        btn.disabled = false; setMsg(out, t('badLogin'), 'bad');
+      }).catch(function () { btn.disabled = false; setMsg(out, t('loginFail'), 'bad'); });
+    } }, [
+      el('h2', { class: 'display', style: 'margin:0;font-size:32px', text: t('lLogin') }),
+      field(t('email'), email), field(t('password'), pw), btn, out,
+      el('button', { type: 'button', class: 'link', style: 'align-self:flex-start', text: t('forgot'), onclick: forgotView }),
+      el('div', { style: 'border-top:1px solid var(--line);padding-top:14px' }, [
+        el('p', { style: 'margin:0 0 4px;font-weight:600', text: t('noAccount') }),
+        el('p', { style: 'margin:0;font-size:14px;color:var(--soft)' }, [t('applyLead') + ' ', el('button', { type: 'button', class: 'link', text: t('applyLink'), onclick: applyView })])
+      ])
+    ]);
+    view.appendChild(form);
+  }
+
+  function forgotView() {
+    view.textContent = '';
+    var email = el('input', { type: 'email', autocomplete: 'username', required: true });
+    var out = el('div', { 'aria-live': 'polite' });
+    var btn = el('button', { type: 'submit', class: 'btn', text: t('fBtn') });
+    view.appendChild(el('form', { style: 'display:flex;flex-direction:column;gap:14px', onsubmit: function (e) {
+      e.preventDefault(); btn.disabled = true;
+      B.publicPost('forgot', { email: email.value.trim() }).then(function (r) {
+        btn.disabled = false;
+        setMsg(out, r.status === 429 ? t('tooMany') : r.ok ? t('fSent') : t('failed'), r.ok ? 'ok' : 'bad');
+      }, function () { btn.disabled = false; setMsg(out, t('failed'), 'bad'); });
+    } }, [
+      el('h2', { class: 'display', style: 'margin:0;font-size:32px', text: t('fH') }),
+      el('p', { style: 'margin:0;color:var(--soft)', text: t('fLead') }),
+      field(t('email'), email), btn, out,
+      el('button', { type: 'button', class: 'link', style: 'align-self:flex-start', text: t('back'), onclick: loginView })
+    ]));
+  }
+
+  function applyView() {
+    view.textContent = '';
+    var f = {};
+    function inp(name, type, req, ac) { f[name] = el('input', { type: type || 'text', required: req || null, autocomplete: ac || null, name: name }); return f[name]; }
+    var msgBox = el('textarea', { rows: '3', name: 'message' });
+    var hp = el('input', { type: 'text', name: 'website', tabindex: '-1', autocomplete: 'off' });
+    var out = el('div', { 'aria-live': 'polite' });
+    var btn = el('button', { type: 'submit', class: 'btn', text: t('applyBtn') });
+    var form = el('form', { style: 'display:flex;flex-direction:column;gap:12px', onsubmit: function (e) {
+      e.preventDefault();
+      var body = { lang: B.LANG, website: hp.value, message: msgBox.value };
+      Object.keys(f).forEach(function (k) { body[k] = f[k].value.trim(); });
+      if (!body.company || !body.company_code || !body.contact_name || !body.email) { setMsg(out, t('fill'), 'bad'); return; }
+      btn.disabled = true;
+      B.publicPost('apply', body).then(function (r) {
+        if (r.ok) { view.textContent = ''; view.appendChild(msg(t('applied'), 'ok')); view.appendChild(el('p', {}, [el('button', { type: 'button', class: 'link', text: t('back'), onclick: loginView })])); return; }
+        btn.disabled = false; setMsg(out, r.status === 429 ? t('tooMany') : r.status === 400 ? t('fill') : t('failed'), 'bad');
+      }, function () { btn.disabled = false; setMsg(out, t('failed'), 'bad'); });
+    } }, [
+      el('h2', { class: 'display', style: 'margin:0;font-size:32px', text: t('aH') }),
+      field(t('company') + ' *', inp('company', 'text', true, 'organization')),
+      el('div', { class: 'row' }, [field(t('companyCode') + ' *', inp('company_code', 'text', true)), field(t('vatCode'), inp('vat_code'))]),
+      field(t('contact') + ' *', inp('contact_name', 'text', true, 'name')),
+      el('div', { class: 'row' }, [field(t('email') + ' *', inp('email', 'email', true, 'email')), field(t('phone'), inp('phone', 'tel', false, 'tel'))]),
+      field(t('address'), inp('address', 'text', false, 'street-address')),
+      field(t('message'), msgBox),
+      el('div', { class: 'hp', 'aria-hidden': 'true' }, [hp]),
+      btn, out,
+      el('button', { type: 'button', class: 'link', style: 'align-self:flex-start', text: t('back'), onclick: loginView })
+    ]);
+    view.appendChild(form);
+  }
+
+  // Already logged in? Go straight to ordering.
+  B.token().then(function (tk) { if (tk) location.href = shop; else if (location.hash === '#apply') applyView(); else loginView(); }, loginView);
+})();
+</script>
+</body>
+</html>

@@ -120,4 +120,26 @@ async function orderPickup(plan, shipmentId) {
   });
 }
 
-module.exports = { mode, sender, pickupPlan, createShipment, labelPdf, orderPickup, trackingUrl, vilniusNow };
+// One DPD pickup per day for shop and B2B orders together. A tiny marker file in Vercel Blob
+// remembers that today's pickup is booked, so the next order (shop or B2B) goes with it.
+function blob() { return require('@vercel/blob'); }
+async function pickupMarked(date) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return false;
+  const { blobs } = await blob().list({ prefix: 'dpd/pickup-' + date, token: process.env.BLOB_READ_WRITE_TOKEN });
+  return blobs.length > 0;
+}
+async function markPickup(date) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return;
+  await blob().put('dpd/pickup-' + date + '.txt', date, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN, addRandomSuffix: true, contentType: 'text/plain' });
+}
+// Books today's (or the next working day's) pickup unless it is already booked. Returns { plan, pickup }.
+async function bookPickupOnce(shipmentId) {
+  const plan = pickupPlan();
+  if (mode() !== 'full') return { plan, pickup: 'off' };
+  if (await pickupMarked(plan.date)) return { plan, pickup: 'existing' };
+  await orderPickup(plan, shipmentId);
+  await markPickup(plan.date).catch(() => {});
+  return { plan, pickup: 'booked' };
+}
+
+module.exports = { mode, sender, pickupPlan, createShipment, labelPdf, orderPickup, trackingUrl, vilniusNow, pickupMarked, markPickup, bookPickupOnce };

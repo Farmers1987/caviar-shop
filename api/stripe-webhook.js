@@ -233,11 +233,13 @@ async function shipWithDpd(session, o, key) {
     // One pickup per day: look for another order today that already booked it.
     const since = Math.floor(Date.now() / 1000) - 3 * 86400;
     const others = await stripe(`checkout/sessions?limit=100&created[gte]=${since}`, key);
-    const taken = others.ok && (others.data.data || []).some((x) => x.id !== session.id && x.metadata && x.metadata.dpd_pickup_date === plan.date);
+    const taken = (others.ok && (others.data.data || []).some((x) => x.id !== session.id && x.metadata && x.metadata.dpd_pickup_date === plan.date))
+      || await DPD.pickupMarked(plan.date).catch(() => false); // a B2B order may have booked it
     if (taken) { o.dpd.pickup = 'existing'; return; }
     try {
       await DPD.orderPickup(plan, shipmentId);
       o.dpd.pickup = 'booked';
+      await DPD.markPickup(plan.date).catch(() => {});
       await stripe(`checkout/sessions/${session.id}`, key, new URLSearchParams({ 'metadata[dpd_pickup_date]': plan.date }).toString());
     } catch (e) { o.dpd.pickup = 'failed'; o.dpd.pickupError = e.message.slice(0, 200); console.error('DPD pickup failed', e.message); }
   } catch (e) {

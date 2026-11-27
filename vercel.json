@@ -41,6 +41,22 @@
           "value": "no-store"
         }
       ]
+    },
+    {
+      "source": "/b2b/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
+  ],
+  "regions": [
+    "arn1"
   ]
 }

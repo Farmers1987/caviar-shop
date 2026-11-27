@@ -7,7 +7,8 @@
 // So two orders at the same moment can never overwrite each other's numbers.
 //
 // If no snapshot has been saved yet, stock is "off": everything shows as available.
-const { CATALOG } = require('./_shared.js');
+const { CATALOG, STOCK_ITEMS, B2B_CATALOG } = require('./_shared.js');
+const db = require('./_db.js');
 
 const PREFIX = 'stock/';
 const LOW = Number(process.env.STOCK_LOW_AT || 3);
@@ -31,7 +32,7 @@ async function readSnapshot() {
 // Best-before dates: per product a list of { date: 'YYYY-MM-DD', qty }. Only used on the admin page.
 function cleanBatches(batches) {
   const out = {};
-  for (const k of Object.keys(CATALOG)) {
+  for (const k of Object.keys(STOCK_ITEMS)) {
     const list = batches && Array.isArray(batches[k]) ? batches[k] : [];
     const merged = {};
     for (const b of list.slice(0, 50)) {
@@ -58,7 +59,7 @@ function remainingBatches(list, sold) {
 
 async function saveSnapshot(counts, by, batches) {
   const clean = {};
-  for (const k of Object.keys(CATALOG)) {
+  for (const k of Object.keys(STOCK_ITEMS)) {
     const n = Number(counts[k]);
     clean[k] = Number.isInteger(n) && n >= 0 && n <= 100000 ? n : 0;
   }
@@ -87,7 +88,7 @@ function decodeItems(s) {
   String(s || '').split(',').forEach((p) => {
     const [k, q] = p.split(':');
     const n = Number(q);
-    if (CATALOG[k] && Number.isInteger(n) && n > 0) out[k] = (out[k] || 0) + n;
+    if (STOCK_ITEMS[k] && Number.isInteger(n) && n > 0) out[k] = (out[k] || 0) + n;
   });
   return out;
 }
@@ -115,18 +116,43 @@ async function takenSince(since, stripeKey, excludeId) {
   return taken;
 }
 
+// Tins taken by B2B orders since `since` (unix seconds): lines from stock in orders that are not cancelled.
+async function b2bTakenSince(since) {
+  if (!db.enabled()) return {};
+  const iso = new Date(since * 1000).toISOString();
+  const rows = await db.rest(`b2b_order_lines?select=product_id,qty,b2b_orders!inner(created_at,status)&made_to_order=eq.false&b2b_orders.created_at=gte.${db.q(iso)}&b2b_orders.status=neq.cancelled`);
+  const out = {};
+  for (const r of rows || []) if (STOCK_ITEMS[r.product_id]) out[r.product_id] = (out[r.product_id] || 0) + r.qty;
+  return out;
+}
+
 // Returns null when stock is off, otherwise { available: {key: n}, setAt }.
 async function availability(stripeKey, opts) {
   opts = opts || {};
   if (!opts.fresh && !opts.excludeId && cache && Date.now() - cache.at < 15000) return cache.data;
   const snap = await readSnapshot();
   if (!snap) return null;
-  const taken = await takenSince(snap.setAt, stripeKey, opts.excludeId);
+  const taken = stripeKey ? await takenSince(snap.setAt, stripeKey, opts.excludeId) : {};
+  // B2B orders take tins from the same stock (lines sent from stock, not made-to-order ones).
+  const b2b = await b2bTakenSince(snap.setAt);
+  for (const k of Object.keys(b2b)) taken[k] = (taken[k] || 0) + b2b[k];
   const available = {};
-  for (const k of Object.keys(CATALOG)) available[k] = (snap.counts[k] || 0) - (taken[k] || 0);
+  for (const k of Object.keys(STOCK_ITEMS)) available[k] = (snap.counts[k] || 0) - (taken[k] || 0);
   const data = { available, setAt: snap.setAt, counts: snap.counts, taken, batches: snap.batches || {} };
   if (!opts.excludeId) cache = { at: Date.now(), data };
   return data;
+}
+
+// What a B2B customer may know per tin: in / low / out, or made to order (125 g and 250 g not in stock).
+function b2bView(av) {
+  const out = {};
+  for (const k of Object.keys(B2B_CATALOG)) {
+    const p = B2B_CATALOG[k];
+    const n = av ? Math.max(0, av.available[k] || 0) : (p.mto ? 0 : 999);
+    if (n <= 0) out[k] = p.mto ? { status: 'mto', inStock: 0 } : { status: 'out', inStock: 0 };
+    else out[k] = { status: n <= LOW ? 'low' : 'in', inStock: Math.min(n, 500) };
+  }
+  return out;
 }
 
 // What the shop page may know: a status and how many can be put in the basket, not the stock figure.
@@ -140,4 +166,4 @@ function publicView(av) {
   return out;
 }
 
-module.exports = { remainingBatches, enabled, readSnapshot, saveSnapshot, availability, publicView, encodeItems, decodeItems, MAX_PER_LINE };
+module.exports = { b2bView, b2bTakenSince, remainingBatches, enabled, readSnapshot, saveSnapshot, availability, publicView, encodeItems, decodeItems, MAX_PER_LINE };
