@@ -9,6 +9,8 @@ const guard = require('./_guard.js');
 const DPD = require('./_dpd.js');
 const mail = require('./_mail.js');
 const B2BM = require('./_b2bmail.js');
+const { placeOrder, availabilityView } = require('./_b2border.js');
+const { B2B_CATALOG, CAVIARS, B2B_SIZES, VAT_RATE, B2B_MIN_CENTS } = require('./_shared.js');
 
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 function allowed(req) {
@@ -186,7 +188,45 @@ async function cancel(req, res) {
   return res.status(200).json({ ok: true });
 }
 
-const ACTIONS = { approve, reject, resend, customer, ship, ready, collected, invoice, cancel };
+// Prices and stock status for the admin's own order form.
+async function catalog(res) {
+  const { view } = await availabilityView();
+  const items = Object.keys(B2B_CATALOG).map((id) => ({ id, name: B2B_CATALOG[id].name, caviar: B2B_CATALOG[id].caviar || null, grams: B2B_CATALOG[id].grams || null, cents: B2B_CATALOG[id].cents, status: view[id] ? view[id].status : 'in', inStock: view[id] ? view[id].inStock : 0, mtoPossible: !!B2B_CATALOG[id].mto }));
+  return res.status(200).json({ items, caviars: Object.keys(CAVIARS).map((k) => ({ id: k, name: CAVIARS[k].name })), sizes: B2B_SIZES, vatRate: VAT_RATE, minCents: B2B_MIN_CENTS });
+}
+
+// An existing customer added by hand, without an application. A login mail is optional:
+// the account exists either way, so a login can be sent later with "Send login-mail".
+async function createCustomer(req, res) {
+  const b = body(req);
+  const email = str(b.email, 200).toLowerCase();
+  const c = {
+    company: str(b.company, 120), company_code: str(b.company_code, 30), vat_code: str(b.vat_code, 30) || null,
+    contact_name: str(b.contact_name, 100), email, phone: str(b.phone, 40) || null,
+    street: str(b.street, 120), postal_code: str(b.postal_code, 12), city: str(b.city, 60), lang: b.lang === 'en' ? 'en' : 'lt',
+  };
+  if (!c.company || !c.company_code || !c.contact_name || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return res.status(400).json({ error: 'missing' });
+  let user;
+  try { user = await db.createUser(email, { company: c.company }); }
+  catch (e) { if (e.status === 422 || e.status === 400) return res.status(409).json({ error: 'email_exists' }); throw e; }
+  c.id = user.id || (user.user && user.user.id);
+  await db.rest('b2b_customers', { method: 'POST', body: c, prefer: 'return=minimal' });
+  if (b.sendLogin) await sendWelcome(c);
+  return res.status(200).json({ ok: true, id: c.id });
+}
+
+// An order placed by you on the customer's behalf (phone, mail, a visit). Same prices, stock and mails;
+// you may go below the minimum and choose whether the customer gets the confirmation.
+async function createOrder(req, res) {
+  const b = body(req);
+  const rows = await db.rest(`b2b_customers?select=*&id=eq.${db.q(str(b.customer_id, 60))}`);
+  const c = rows && rows[0];
+  if (!c) return res.status(404).json({ error: 'not_found' });
+  const r = await placeOrder(c, Object.assign({}, b, { lang: c.lang }), { byAdmin: true, ignoreMinimum: true, noCustomerMail: !b.sendConfirmation });
+  return res.status(r.code).json(r.body);
+}
+
+const ACTIONS = { approve, reject, resend, customer, ship, ready, collected, invoice, cancel, create_customer: createCustomer, create_order: createOrder };
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -202,6 +242,7 @@ module.exports = async (req, res) => {
   const action = String((req.query && req.query.action) || '');
   try {
     if (req.method === 'GET' && action === 'overview') return await overview(res);
+    if (req.method === 'GET' && action === 'catalog') return await catalog(res);
     if (req.method === 'POST' && ACTIONS[action]) return await ACTIONS[action](req, res);
     return res.status(404).json({ error: 'unknown_action' });
   } catch (e) {

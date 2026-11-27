@@ -119,7 +119,7 @@ ${outro(L)}`),
   };
 }
 
-function internalOrder(o, lines, c, d) {
+function internalOrder(o, lines, c, d, byAdmin) {
   const mto = lines.filter((l) => l.made_to_order);
   const now = lines.filter((l) => l.shipment_no === 1 && !l.made_to_order);
   let banner;
@@ -129,9 +129,9 @@ function internalOrder(o, lines, c, d) {
   else banner = box('#f6e7b0', `<strong>Send ordren.</strong> Tryk "Send" på ordren i admin, når den er pakket; så oprettes DPD-forsendelsen, og kunden får sporingslink.`);
   const waiting = mto.length ? box('#f6e7b0', `<strong>Bestillingsvarer:</strong> ${mto.map((l) => `${esc(l.name.replace(/^Antonius Caviar /, ''))} × ${l.qty}`).join(', ')}. Bestil hos Antonius og bekræft datoen over for kunden. ${o.split ? 'Kunden har valgt dellevering: lagervarerne sendes nu.' : 'Kunden vil have alt samlet: intet sendes, før bestillingsvarerne er her.'}`) : '';
   return {
-    subject: `Ny B2B-ordre ${o.ref}: ${c.company}${o.delivery === 'pickup' ? ' (afhentning i Dirva)' : ''}${mto.length ? ' – indeholder bestillingsvarer' : ''}`,
+    subject: `${byAdmin ? 'Oprettet i admin: ' : 'Ny '}B2B-ordre ${o.ref}: ${c.company}${o.delivery === 'pickup' ? ' (afhentning i Dirva)' : ''}${mto.length ? ' – indeholder bestillingsvarer' : ''}`,
     html: shell(`<h1 style="margin:0 0 14px;font-size:24px">Ny B2B-ordre ${esc(o.ref)}</h1>
-${banner}${waiting}
+${byAdmin ? `<p style="margin:0 0 14px;color:#4c5a52">Ordren er oprettet af jer i admin på kundens vegne.</p>` : ''}${banner}${waiting}
 ${lineTable(o, lines, T.en)}
 <h2 style="margin:24px 0 6px;font-size:17px">Kunde${o.lang === 'lt' ? ' (bestilte på litauisk)' : ''}</h2>
 <p style="margin:0">${esc(c.company)} · virksomhedskode ${esc(c.company_code)}${c.vat_code ? ` · moms ${esc(c.vat_code)}` : ''}<br>${esc(c.contact_name)} · ${esc(c.email)} · ${esc(c.phone || '')}<br>${o.delivery === 'pickup' ? 'Afhentning i Dirva' : [o.ship_street, [o.ship_postal_code, o.ship_city].join(' ')].map(esc).join(', ')}${o.po_ref ? `<br>Kundens reference: ${esc(o.po_ref)}` : ''}${o.note ? `<br><strong>Note: ${esc(o.note)}</strong>` : ''}</p>
