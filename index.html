@@ -138,6 +138,14 @@ th{text-align:left;color:var(--soft);padding-right:10px}
 .total{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid var(--line);padding-top:20px}
 .total .price{font-size:36px}
 .note{font-size:14px;color:var(--accent)}
+.dchoice{border:0;padding:0;margin:18px 0 6px;display:grid;gap:10px}
+.dchoice legend{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:10px;padding:0}
+.dopt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);cursor:pointer}
+.dopt.on{border-color:var(--accent)}
+.dopt input{margin:4px 0 0;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.dopt .dname{display:block;font-weight:600}
+.dopt .dsub{display:block;font-size:14px;color:var(--soft);margin-top:3px}
+.dopt .dsub a{color:var(--accent)}
 .error{font-size:14px;color:#F3B6A8}
 footer{border-top:1px solid var(--line)}
 footer .wrap{padding-top:48px;padding-bottom:56px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px 48px;font-size:14px;color:var(--muted)}
@@ -320,6 +328,9 @@ header nav a{padding:8px 0;white-space:nowrap}
 (function () {
   var FREE_FROM = 150;
   var feeCents = null;
+  var PICKUP_MAP = 'https://www.google.com/maps/search/?api=1&query=Dominikon%C5%B3%20g.%2011%2C%2001131%20Vilnius';
+  var delivery = 'dpd';
+  try { if (localStorage.getItem('fc-delivery') === 'pickup') delivery = 'pickup'; } catch (e) {}
   var PRODUCTS = [
     { id: 'sib5', roe: 'Siberian sturgeon roe', nutrition: [['Energy','1024 kJ / 246 kcal'],['Fat','16 g'],['of which saturates','2.7 g'],['Carbohydrate','1.5 g'],['of which sugars','< 0.5 g'],['Protein','24 g'],['Salt','2.9 g']], name: 'Siberian 5*', stars: 5, species: 'Siberian sturgeon', latin: 'Acipenser baerii', p30: 45, p50: 75,
       desc: 'Intense and complex, with spicy, woody notes, mild salt and a clean, lasting finish.', grain: '2.6–2.7 mm, medium', aroma: 'Oyster, nori, umami',
@@ -370,12 +381,12 @@ header nav a{padding:8px 0;white-space:nowrap}
       'about.m.h': 'How it is made', 'about.m.p': 'Prepared the traditional malossol way, with only a little salt. The caviar is fresh and unpasteurised, packed by hand and checked for colour, size, taste and consistency.',
       'about.s.h': 'How to serve', 'about.s.p': 'Open the tin just before serving. Serve it in glass or crystal, or in the tin on crushed ice, and use a mother-of-pearl spoon rather than silver.',
       'del.eyebrow': 'Delivery and care', 'del.h2': 'From our cold room to your fridge',
-      'del.1.h': 'Within 3 working days', 'del.1.p': 'We deliver chilled to any address in Lithuania within 3 working days of your order. We do not ship to other countries.',
+      'del.1.h': 'Within 3 working days', 'del.1.p': 'We deliver chilled to any address in Lithuania within 3 working days of your order. We do not ship to other countries. You can also pick up your order free of charge at Dirva, Dominikonų g. 11, Vilnius.',
       'del.2.h': 'Free from 150 €', 'del.2.p': 'Delivery is free on orders from 150 €.',
       'del.fee': function (m) { return 'Below that, delivery costs ' + m + '.'; },
       'del.3.h': 'Keep it cold', 'del.3.p': 'Store unopened tins in the fridge at −3 to +2 °C. Never freeze caviar. Once opened, enjoy within 48 hours. The best-before date is printed on each tin.',
       'order.eyebrow': 'Your order', 'order.h2': 'Review and pay',
-      'order.p1': 'You enter your delivery address in Lithuania and pay by card on the next step. Payment is handled securely by Stripe.',
+      'order.p1': 'Choose delivery or pick-up below. You pay by card on the next step, where you also enter your delivery address if you chose delivery. Payment is handled securely by Stripe.',
       'order.p2': 'Caviar is a perishable food, so it cannot be returned once delivered, unless it is faulty. The spoon and tin opener can be returned within 14 days. By paying you accept our <a href="{terms}">terms of sale</a>; read how we handle your data in our <a href="{privacy}">privacy policy</a>.',
       'foot.sold': 'Antonius Caviar is sold in Lithuania by Farmers and Company, UAB, J. Basanavičiaus g. 26, Vilnius. Company code 306143862, VAT code LT100015490611.',
       'foot.contact': 'Contact', 'foot.q': 'Questions about your order? Write to us at <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
@@ -394,6 +405,8 @@ header nav a{padding:8px 0;white-space:nowrap}
       'cap': function (n) { return 'Only ' + n + ' available.'; },
       'free': 'Free', 'atPay': 'Shown at payment', 'deliveryLT': 'Delivery in Lithuania',
       'freeYes': 'Your order qualifies for free delivery.', 'freeMore': function (m) { return 'Add ' + m + ' more for free delivery.'; },
+      'dHow': 'Delivery or pick-up', 'dDpd': 'Chilled delivery by DPD in Lithuania', 'dDpdSub': 'Within 3 working days. 10 €, free from 150 €.',
+      'dPick': 'Pick up at Dirva, Dominikonų g. 11, Vilnius', 'dPickSub': 'Free. Ready from the next working day, during Dirva\'s opening hours.', 'dMap': 'Show on map', 'pickupRow': 'Pick-up at Dirva',
       'totalVat': 'Total incl. VAT', 'pay': 'Continue to payment', 'opening': 'Opening payment…',
       'errOff': 'Payment is not switched on yet. Please try again later.',
       'errStock': 'Some items are no longer available in the quantity you chose. We have updated your order; please check it and try again.',
@@ -420,12 +433,12 @@ header nav a{padding:8px 0;white-space:nowrap}
       'about.m.h': 'Kaip gaminami', 'about.m.p': 'Ruošiami tradiciniu malossol būdu, su nedideliu kiekiu druskos. Ikrai švieži ir nepasterizuoti, fasuojami rankomis ir tikrinami pagal spalvą, dydį, skonį ir konsistenciją.',
       'about.s.h': 'Kaip patiekti', 'about.s.p': 'Skardinę atidarykite prieš pat patiekdami. Patiekite stikliniame ar krištoliniame inde arba skardinėje ant smulkinto ledo; naudokite perlamutrinį, o ne sidabrinį šaukštelį.',
       'del.eyebrow': 'Pristatymas ir laikymas', 'del.h2': 'Iš mūsų šaldymo kameros – į jūsų šaldytuvą',
-      'del.1.h': 'Per 3 darbo dienas', 'del.1.p': 'Atvėsintus ikrus pristatome bet kuriuo adresu Lietuvoje per 3 darbo dienas nuo užsakymo. Į kitas šalis nesiunčiame.',
+      'del.1.h': 'Per 3 darbo dienas', 'del.1.p': 'Atvėsintus ikrus pristatome bet kuriuo adresu Lietuvoje per 3 darbo dienas nuo užsakymo. Į kitas šalis nesiunčiame. Užsakymą taip pat galite nemokamai atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje.',
       'del.2.h': 'Nemokamai nuo 150 €', 'del.2.p': 'Užsakymams nuo 150 € pristatymas nemokamas.',
       'del.fee': function (m) { return 'Mažesniems užsakymams pristatymas kainuoja ' + m + '.'; },
       'del.3.h': 'Laikykite šaltai', 'del.3.p': 'Neatidarytas skardines laikykite šaldytuve, nuo −3 iki +2 °C temperatūroje. Ikrų niekada neužšaldykite. Atidarytus suvalgykite per 48 valandas. Tinkamumo vartoti terminas nurodytas ant kiekvienos skardinės.',
       'order.eyebrow': 'Jūsų užsakymas', 'order.h2': 'Peržiūrėkite ir apmokėkite',
-      'order.p1': 'Kitame žingsnyje įvesite pristatymo adresą Lietuvoje ir apmokėsite kortele. Mokėjimą saugiai apdoroja Stripe.',
+      'order.p1': 'Žemiau pasirinkite pristatymą arba atsiėmimą. Kitame žingsnyje apmokėsite kortele ir, jei pasirinkote pristatymą, įvesite pristatymo adresą. Mokėjimą saugiai apdoroja Stripe.',
       'order.p2': 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Šaukštelį ir skardinės atidarytuvą galima grąžinti per 14 dienų. Apmokėdami sutinkate su mūsų <a href="{terms}">pirkimo taisyklėmis</a>; kaip tvarkome jūsų duomenis, rasite <a href="{privacy}">privatumo politikoje</a>.',
       'foot.sold': 'Antonius Caviar Lietuvoje parduoda Farmers and Company, UAB, J. Basanavičiaus g. 26, Vilnius. Įmonės kodas 306143862, PVM mokėtojo kodas LT100015490611.',
       'foot.contact': 'Kontaktai', 'foot.q': 'Turite klausimų dėl užsakymo? Rašykite mums adresu <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
@@ -444,6 +457,8 @@ header nav a{padding:8px 0;white-space:nowrap}
       'cap': function (n) { return 'Galima užsisakyti tik ' + n + ' vnt.'; },
       'free': 'Nemokamai', 'atPay': 'Bus parodyta apmokant', 'deliveryLT': 'Pristatymas Lietuvoje',
       'freeYes': 'Jūsų užsakymui taikomas nemokamas pristatymas.', 'freeMore': function (m) { return 'Iki nemokamo pristatymo trūksta ' + m + '.'; },
+      'dHow': 'Pristatymas arba atsiėmimas', 'dDpd': 'Atvėsintas DPD pristatymas Lietuvoje', 'dDpdSub': 'Per 3 darbo dienas. 10 €, nemokamai nuo 150 €.',
+      'dPick': 'Atsiėmimas „Dirvoje“, Dominikonų g. 11, Vilnius', 'dPickSub': 'Nemokamai. Galėsite atsiimti nuo kitos darbo dienos „Dirvos“ darbo valandomis.', 'dMap': 'Rodyti žemėlapyje', 'pickupRow': 'Atsiėmimas „Dirvoje“',
       'totalVat': 'Iš viso su PVM', 'pay': 'Pereiti prie apmokėjimo', 'opening': 'Atidaromas apmokėjimas…',
       'errOff': 'Apmokėjimas dar neįjungtas. Bandykite vėliau.',
       'errStock': 'Kai kurių prekių nebėra tiek, kiek pasirinkote. Atnaujinome jūsų užsakymą – patikrinkite jį ir bandykite dar kartą.',
@@ -660,6 +675,23 @@ header nav a{padding:8px 0;white-space:nowrap}
     root.appendChild(el('div', { class: 'spacer', 'aria-hidden': 'true' }));
     root.appendChild(el('div', { class: 'spacer', 'aria-hidden': 'true' }));
   }
+  function deliveryChoice() {
+    var fs = el('fieldset', { class: 'dchoice' }, [el('legend', { text: t('dHow') })]);
+    [['dpd', t('dDpd'), t('dDpdSub')], ['pickup', t('dPick'), t('dPickSub')]].forEach(function (o) {
+      var input = el('input', { type: 'radio', name: 'delivery', value: o[0] });
+      if (delivery === o[0]) input.checked = true;
+      input.addEventListener('change', function () {
+        delivery = o[0];
+        try { localStorage.setItem('fc-delivery', delivery); } catch (e) {}
+        renderCart();
+        var again = document.querySelector('.dchoice input[value="' + delivery + '"]'); if (again) again.focus();
+      });
+      var sub = el('span', { class: 'dsub', text: o[2] + ' ' });
+      if (o[0] === 'pickup') sub.appendChild(el('a', { href: PICKUP_MAP, target: '_blank', rel: 'noopener', text: t('dMap') }));
+      fs.appendChild(el('label', { class: 'dopt' + (delivery === o[0] ? ' on' : '') }, [input, el('span', {}, [el('span', { class: 'dname', text: o[1] }), sub])]));
+    });
+    return fs;
+  }
   function renderCart() {
     var box = document.getElementById('cartBox');
     var keys = Object.keys(cart), subtotal = 0, count = 0;
@@ -684,12 +716,14 @@ header nav a{padding:8px 0;white-space:nowrap}
       if (atMax && (capped[k] || maxFor(k) < 20)) kids.push(el('p', { class: 'capnote', text: t('cap')(maxFor(k)) }));
       return el('div', { class: 'line' }, kids);
     }));
-    var free = subtotal >= FREE_FROM;
+    var pickup = delivery === 'pickup';
+    var free = pickup || subtotal >= FREE_FROM;
     var fee = free ? 0 : (feeCents || 0) / 100;
     var deliveryText = free ? t('free') : (feeCents === null ? t('atPay') : money(fee));
     box.appendChild(list);
-    box.appendChild(el('div', { class: 'row' }, [el('p', { text: t('deliveryLT') }), el('p', { text: deliveryText })]));
-    box.appendChild(el('p', { class: 'note', text: free ? t('freeYes') : t('freeMore')(money(FREE_FROM - subtotal)) }));
+    box.appendChild(deliveryChoice());
+    box.appendChild(el('div', { class: 'row' }, [el('p', { text: pickup ? t('pickupRow') : t('deliveryLT') }), el('p', { text: deliveryText })]));
+    if (!pickup) box.appendChild(el('p', { class: 'note', text: subtotal >= FREE_FROM ? t('freeYes') : t('freeMore')(money(FREE_FROM - subtotal)) }));
     box.appendChild(el('div', { class: 'total' }, [
       el('p', { style: 'font-size:14px;letter-spacing:.1em;text-transform:uppercase', text: t('totalVat') }),
       el('p', { class: 'price', text: money(subtotal + fee) })
@@ -704,7 +738,7 @@ header nav a{padding:8px 0;white-space:nowrap}
     busy = true; errorText = ''; renderCart();
     var items = Object.keys(cart).map(function (k) { return { id: k, qty: cart[k] }; });
     track('begin_checkout', items.reduce(function (s, i) { return s + CATALOG[i.id].price * i.qty; }, 0), items.map(function (i) { return gaItem(i.id, i.qty); }));
-    fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: items, lang: LANG }) })
+    fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: items, lang: LANG, delivery: delivery }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (res) {
         if (res.ok && res.data.url) { window.location.href = res.data.url; return; }

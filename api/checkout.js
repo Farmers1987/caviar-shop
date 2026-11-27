@@ -8,11 +8,15 @@ const TEXT = {
     note: 'Note for the courier (door code, floor)',
     submit: 'Caviar is a perishable food and cannot be returned once delivered, unless it is faulty. If you add a note for the courier, we pass it on to DPD exactly as you write it. Please check door codes and instructions carefully, as the information you give is your responsibility.',
     shipping: 'Chilled delivery in Lithuania, within 3 working days',
+    pickup: 'Pick-up at Dirva, Dominikonų g. 11, Vilnius (from the next working day)',
+    submitPickup: 'Caviar is a perishable food and cannot be returned once collected, unless it is faulty. Your order will be ready to collect at Dirva, Dominikonų g. 11, Vilnius, from the next working day, during Dirva\'s opening hours. Please give your order number when you collect it.',
   },
   lt: {
     note: 'Žinutė kurjeriui (durų kodas, aukštas)',
     submit: 'Ikrai yra greitai gendantis maisto produktas, todėl pristatyti negali būti grąžinami, nebent yra su trūkumais. Jei parašysite žinutę kurjeriui, perduosime ją DPD tiksliai taip, kaip parašėte. Atidžiai patikrinkite durų kodus ir nurodymus – už pateiktą informaciją atsakote jūs.',
     shipping: 'Atvėsintas pristatymas Lietuvoje per 3 darbo dienas',
+    pickup: 'Atsiėmimas „Dirvoje“, Dominikonų g. 11, Vilnius (nuo kitos darbo dienos)',
+    submitPickup: 'Ikrai yra greitai gendantis maisto produktas, todėl atsiimti negali būti grąžinami, nebent yra su trūkumais. Užsakymą galėsite atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje, nuo kitos darbo dienos „Dirvos“ darbo valandomis. Atsiimdami nurodykite užsakymo numerį.',
   },
 };
 
@@ -32,6 +36,7 @@ module.exports = async (req, res) => {
     try { body = JSON.parse(body); } catch (e) { body = null; }
   }
   const lang = body && body.lang === 'lt' ? 'lt' : 'en';
+  const pickup = body && body.delivery === 'pickup';
   const T = TEXT[lang];
   const items = body && Array.isArray(body.items) ? body.items : null;
   if (!items || items.length === 0 || items.length > 20) return res.status(400).json({ error: 'invalid_order' });
@@ -71,31 +76,38 @@ module.exports = async (req, res) => {
   }
   params.append('metadata[items]', stock.encodeItems(items.map((it) => ({ id: String(it.id), qty: Number(it.qty) }))));
   params.append('metadata[lang]', lang);
+  params.append('metadata[delivery]', pickup ? 'pickup' : 'dpd');
   params.append('locale', lang);
   params.append('expires_at', String(Math.floor(Date.now() / 1000) + 31 * 60));
 
-  const fee = subtotal >= FREE_FROM_CENTS ? 0 : shippingFeeCents() || 0;
+  const fee = pickup || subtotal >= FREE_FROM_CENTS ? 0 : shippingFeeCents() || 0;
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const origin = `https://${host}`;
 
   params.append('mode', 'payment');
   // Payment methods are chosen in the Stripe Dashboard (Settings > Payment methods), not here.
-  params.append('success_url', `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}${lang === 'lt' ? '&lang=lt' : ''}`);
+  params.append('success_url', `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}${lang === 'lt' ? '&lang=lt' : ''}${pickup ? '&pickup=1' : ''}`);
   params.append('cancel_url', `${origin}/${lang === 'lt' ? '?lang=lt' : ''}#order`);
-  params.append('shipping_address_collection[allowed_countries][0]', 'LT');
   params.append('phone_number_collection[enabled]', 'true');
   params.append('adaptive_pricing[enabled]', 'false');
-  // Optional note for the courier. 35 characters is what DPD prints on the label.
-  params.append('custom_fields[0][key]', 'delivery_note');
-  params.append('custom_fields[0][type]', 'text');
-  params.append('custom_fields[0][label][type]', 'custom');
-  params.append('custom_fields[0][label][custom]', T.note);
-  params.append('custom_fields[0][optional]', 'true');
-  params.append('custom_fields[0][text][maximum_length]', '35');
-  // Shown right above the Pay button.
-  params.append('custom_text[submit][message]', T.submit);
+  if (pickup) {
+    // Pick-up at Dirva: no address and no courier note needed.
+    params.append('custom_text[submit][message]', T.submitPickup);
+    params.append('shipping_options[0][shipping_rate_data][display_name]', T.pickup);
+  } else {
+    params.append('shipping_address_collection[allowed_countries][0]', 'LT');
+    // Optional note for the courier. 35 characters is what DPD prints on the label.
+    params.append('custom_fields[0][key]', 'delivery_note');
+    params.append('custom_fields[0][type]', 'text');
+    params.append('custom_fields[0][label][type]', 'custom');
+    params.append('custom_fields[0][label][custom]', T.note);
+    params.append('custom_fields[0][optional]', 'true');
+    params.append('custom_fields[0][text][maximum_length]', '35');
+    // Shown right above the Pay button.
+    params.append('custom_text[submit][message]', T.submit);
+    params.append('shipping_options[0][shipping_rate_data][display_name]', T.shipping);
+  }
   params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
-  params.append('shipping_options[0][shipping_rate_data][display_name]', T.shipping);
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(fee));
   params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'eur');
 

@@ -59,6 +59,7 @@ function orderFacts(session) {
     phone: details.phone || '',
     address: a,
     lang: session.metadata && session.metadata.lang === 'lt' ? 'lt' : 'en',
+    pickup: !!(session.metadata && session.metadata.delivery === 'pickup'),
     stockItems: session.metadata && session.metadata.items,
     note: (((session.custom_fields || []).find((f) => f.key === 'delivery_note') || {}).text || {}).value || '',
     addressLines: [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean),
@@ -88,6 +89,11 @@ const L = {
     deliveryText: 'DPD will deliver your order within 3 working days. The products are kept chilled during delivery. DPD will keep you informed about your parcel by message.',
     parcel: 'DPD parcel number', track: 'Track your parcel',
     hAddress: 'Delivery address', country: { LT: 'Lithuania' }, note: 'Note for the courier',
+    pickupRow: 'Pick-up at Dirva', hPickup: 'Pick-up',
+    pickupText: 'You can collect your order at Dirva, Dominikonų g. 11, Vilnius, from the next working day, during Dirva\'s opening hours. Please give your order number when you collect it.',
+    map: 'Show on map',
+    storagePickup: 'Put the caviar in the fridge as soon as you get home and keep it at −3 °C to +2 °C. Do not freeze the caviar. Once a tin is opened, enjoy it within 48 hours. The best-before date is printed on each tin.',
+    returnsPickup: 'The 14-day right of withdrawal does not apply to caviar. If a product is faulty, please contact us. The caviar spoon and the tin opener can be returned within 14 days of collecting them.',
     hStorage: 'Storing the caviar',
     storage: 'When the parcel arrives, put the caviar in the fridge straight away and keep it at −3 °C to +2 °C. Do not freeze the caviar. Once a tin is opened, enjoy it within 48 hours. The best-before date is printed on each tin.',
     hQuestions: 'Questions and returns',
@@ -110,6 +116,11 @@ const L = {
     deliveryText: 'Jūsų užsakymą per 3 darbo dienas pristatys DPD. Pristatymo metu prekės bus laikomos atšaldytos. Apie siuntos eigą DPD Jus informuos pranešimais.',
     parcel: 'DPD siuntos numeris', track: 'Sekti siuntą',
     hAddress: 'Pristatymo adresas', country: { LT: 'Lietuva' }, note: 'Pastaba kurjeriui',
+    pickupRow: 'Atsiėmimas „Dirvoje“', hPickup: 'Atsiėmimas',
+    pickupText: 'Užsakymą galėsite atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje, nuo kitos darbo dienos „Dirvos“ darbo valandomis. Atsiimdami nurodykite užsakymo numerį.',
+    map: 'Rodyti žemėlapyje',
+    storagePickup: 'Grįžę namo, ikrus iš karto įdėkite į šaldytuvą ir laikykite nuo −3 °C iki +2 °C temperatūroje. Ikrų neužšaldykite. Atidarius pakuotę, ikrus suvartokite per 48 valandas. Data „Geriausias iki“ nurodyta ant kiekvienos pakuotės.',
+    returnsPickup: 'Ikrams 14 dienų sutarties atsisakymo teisė netaikoma. Jei gavote nekokybišką prekę, susisiekite su mumis. Ikrų šaukštelį ir skardinių atidarytuvą galite grąžinti per 14 dienų nuo prekės atsiėmimo.',
     hStorage: 'Ikrų laikymas',
     storage: 'Gavę siuntą, ikrus iš karto įdėkite į šaldytuvą ir laikykite nuo −3 °C iki +2 °C temperatūroje. Ikrų neužšaldykite. Atidarius pakuotę, ikrus suvartokite per 48 valandas. Data „Geriausias iki“ nurodyta ant kiekvienos pakuotės.',
     hQuestions: 'Klausimai ir prekių grąžinimas',
@@ -127,7 +138,7 @@ const itemRows = (o, t) =>
   + `<th align="center" style="padding:0 8px 6px;border-bottom:1px solid #c9c4b4;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4c5a52;font-weight:600;width:60px">${t.qty}</th>`
   + `<th align="right" style="padding:0 0 6px;border-bottom:1px solid #c9c4b4;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#4c5a52;font-weight:600;width:90px">${t.amount}</th></tr>`
   + o.items.map((i) => `<tr><td style="${td}">${esc(t.itemName(i.name))}</td><td align="center" style="${td};padding-left:8px;padding-right:8px">${esc(i.qty)}</td><td align="right" style="${td};white-space:nowrap">${money(i.total)}</td></tr>`).join('')
-  + `<tr><td colspan="2" style="${td}">${t.delivery}</td><td align="right" style="${td};white-space:nowrap">${o.shippingCents ? money(o.shippingCents) : t.free}</td></tr>`
+  + `<tr><td colspan="2" style="${td}">${o.pickup ? t.pickupRow : t.delivery}</td><td align="right" style="${td};white-space:nowrap">${o.shippingCents ? money(o.shippingCents) : t.free}</td></tr>`
   + `<tr><td colspan="2" style="padding:11px 0"><strong>${t.total}</strong></td><td align="right" style="padding:11px 0;white-space:nowrap"><strong>${money(o.totalCents)}</strong></td></tr>`;
 
 function addressBlock(o, t) {
@@ -146,18 +157,20 @@ function customerMail(o) {
   return shell(`<h1 style="margin:0 0 14px;font-size:24px">${t.thanks}</h1>
 <p style="margin:0 0 18px">${t.hello(esc(first))}<br>${t.received(esc(o.ref))}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o, t)}</table>
-${h2(t.hDelivery)}
+${o.pickup ? `${h2(t.hPickup)}
+<p style="margin:0 0 12px">${t.pickupText}</p>
+<p style="margin:0 0 6px"><a href="${PICKUP_MAP}" style="display:inline-block;background:#0e2219;color:#f1eee4;text-decoration:none;padding:11px 20px;font-size:14px;font-weight:bold">${t.map}</a></p>` : `${h2(t.hDelivery)}
 <p style="margin:0 0 10px">${t.deliveryText}</p>
 ${o.parcel ? `<p style="margin:0 0 14px">${t.parcel} – <strong>${esc(o.parcel)}</strong></p>
 <p style="margin:0 0 6px"><a href="${esc(DPD.trackingUrl(o.parcel))}" style="display:inline-block;background:#0e2219;color:#f1eee4;text-decoration:none;padding:11px 20px;font-size:14px;font-weight:bold">${t.track}</a></p>` : ''}
 ${h2(t.hAddress)}
 <p style="margin:0">${addressBlock(o, t)}</p>
-${o.note ? `<p style="margin:8px 0 0">${t.note} – ${esc(o.note)}</p>` : ''}
+${o.note ? `<p style="margin:8px 0 0">${t.note} – ${esc(o.note)}</p>` : ''}`}
 ${h2(t.hStorage)}
-<p style="margin:0">${t.storage}</p>
+<p style="margin:0">${o.pickup ? t.storagePickup : t.storage}</p>
 ${h2(t.hQuestions)}
 <p style="margin:0 0 10px">${t.questions(`<a href="mailto:${esc(REPLY_TO)}" style="color:#0e2219">${esc(REPLY_TO)}</a>`)}</p>
-<p style="margin:0 0 14px">${t.returns}</p>
+<p style="margin:0 0 14px">${o.pickup ? t.returnsPickup : t.returns}</p>
 <p style="margin:0 0 22px;font-size:13px;color:${g}">${link('withdraw', t.links[0])} · ${link('terms', t.links[1])} · ${link('privacy', t.links[2])}</p>
 <p style="margin:0">${t.bye}<br>${t.team}</p>`);
 }
@@ -176,7 +189,17 @@ function dpdBanner(o) {
   return box('#dff0e4', `<strong>DPD-forsendelse oprettet: ${esc(o.parcel)}.</strong> Labelen er vedhæftet; print den og sæt den på kølekassen. ${pickup}${late}`);
 }
 
+const PICKUP_MAP = 'https://www.google.com/maps/search/?api=1&query=Dominikon%C5%B3%20g.%2011%2C%2001131%20Vilnius';
+
 function internalMail(o) {
+  if (o.pickup) {
+    return shell(`<h1 style="margin:0 0 14px;font-size:24px">Ny caviar-ordre ${esc(o.ref)}: afhentning i Dirva</h1>
+${o.oversold ? `<p style="margin:0 0 18px;padding:12px 14px;background:#f3c9bf"><strong>Lageret slog ikke til:</strong> ${esc(o.oversold)}. To kunder har købt de sidste dåser samtidig. Kontakt kunden om levering eller refusion.</p>` : ''}
+<p style="margin:0 0 18px;padding:12px 14px;background:#f6e7b0"><strong>Kunden henter ordren i Dirva, Dominikonų g. 11.</strong> Kunden er lovet, at den ligger klar fra næste hverdag. Bring den til Dirva og sørg for, at den står på køl, mærket med ordrenummer ${esc(o.ref)} og kundens navn.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px">${itemRows(o, L.en)}</table>
+<h2 style="margin:24px 0 6px;font-size:17px">Kunde${o.lang === 'lt' ? ' (handlede på litauisk)' : ''}</h2>
+<p style="margin:0">${esc(o.name)}<br>Telefon: ${esc(o.phone) || 'ikke oplyst'}<br>Mail: ${esc(o.email)}</p>`);
+  }
   return shell(`<h1 style="margin:0 0 14px;font-size:24px">Ny caviar-ordre ${esc(o.ref)}</h1>
 ${o.oversold ? `<p style="margin:0 0 18px;padding:12px 14px;background:#f3c9bf"><strong>Lageret slog ikke til:</strong> ${esc(o.oversold)}. To kunder har købt de sidste dåser samtidig. Kontakt kunden om levering eller refusion.</p>` : ''}
 ${dpdBanner(o)}
@@ -187,6 +210,7 @@ ${dpdBanner(o)}
 
 // Creates the DPD shipment, label and pickup. Never throws: a DPD problem must not stop the order mails.
 async function shipWithDpd(session, o, key) {
+  if (o.pickup) return; // picked up at Dirva: no DPD shipment
   const m = DPD.mode();
   if (m === 'off' || !process.env.DPD_API_TOKEN) return;
   const meta = session.metadata || {};
@@ -253,7 +277,7 @@ module.exports = async (req, res) => {
       }
     } catch (e) { console.error('stock check after payment failed', e.message); }
     await shipWithDpd(session, o, key);
-    await sendMail(mailKey, id + '-internal', { from: FROM, to: [NOTIFY_TO], reply_to: o.email || REPLY_TO, subject: o.parcel && !(o.dpd && o.dpd.pickup === 'failed') ? `Ny caviar-ordre ${o.ref}: label vedhæftet` : `Ny caviar-ordre ${o.ref}: bestil DPD-afhentning i dag`, html: internalMail(o),
+    await sendMail(mailKey, id + '-internal', { from: FROM, to: [NOTIFY_TO], reply_to: o.email || REPLY_TO, subject: o.pickup ? `Ny caviar-ordre ${o.ref}: afhentning i Dirva` : o.parcel && !(o.dpd && o.dpd.pickup === 'failed') ? `Ny caviar-ordre ${o.ref}: label vedhæftet` : `Ny caviar-ordre ${o.ref}: bestil DPD-afhentning i dag`, html: internalMail(o),
       attachments: o.label ? [{ filename: `DPD-label-${o.ref}.pdf`, content: o.label }] : undefined });
     if (o.email) {
       await sendMail(mailKey, id + '-customer', { from: FROM, to: [o.email], reply_to: REPLY_TO, subject: (L[o.lang] || L.en).subject(o.ref), html: customerMail(o) });

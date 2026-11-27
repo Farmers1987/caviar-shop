@@ -48,16 +48,20 @@ try { localStorage.removeItem('fc-caviar-cart'); } catch (e) {}
 })();
 (function () {
   var lt = /[?&]lang=lt\b/.test(location.search);
+  var pickup = /[?&]pickup=1\b/.test(location.search);
+  if (pickup && !lt) document.querySelector('[data-t="p1"]').textContent = 'Your payment went through, and a receipt is on its way to your email. Your order will be ready to collect at Dirva, Dominikonų g. 11, Vilnius, from the next working day, during Dirva\'s opening hours.';
   if (!lt) return;
   var T = {
     h: 'Dėkojame už užsakymą',
     p1: 'Jūsų mokėjimas gautas, o kvitas jau keliauja į jūsų el. paštą. Ikrus atvėsintus pristatysime per 3 darbo dienas.',
+    p1p: 'Jūsų mokėjimas gautas, o kvitas jau keliauja į jūsų el. paštą. Užsakymą galėsite atsiimti „Dirvoje“, Dominikonų g. 11, Vilniuje, nuo kitos darbo dienos „Dirvos“ darbo valandomis.',
     p2: 'Turite klausimų? Rašykite mums adresu <a href="mailto:sp@farmersandcompany.lt">sp@farmersandcompany.lt</a>.',
     p3: 'Susipažinkite su mūsų <a href="/terms-lt.html">pirkimo taisyklėmis</a> ir <a href="/privacy-lt.html">privatumo politika</a>.',
     btn: 'Grįžti į parduotuvę',
     ck: 'Slapukų nustatymai'
   };
   document.documentElement.lang = 'lt'; document.title = 'Ačiū – Farmers & Company';
+  if (pickup) T.p1 = T.p1p;
   document.querySelectorAll('[data-t]').forEach(function (n) { n.innerHTML = T[n.getAttribute('data-t')]; });
   document.querySelector('.btn').setAttribute('href', '/?lang=lt');
 })();
